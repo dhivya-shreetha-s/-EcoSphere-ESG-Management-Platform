@@ -93,7 +93,7 @@
       </div>
 
       <!-- Form Fields -->
-      <div class="space-y-4">
+      <div id="signin-fields" class="space-y-4">
         <div>
           <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Email Address</label>
           <input id="login-email" type="email" placeholder="name@ecosphere.com"
@@ -111,6 +111,53 @@
           class="w-full bg-[#0F3C2C] hover:bg-[#09291D] text-white font-bold py-3.5 rounded-xl shadow-lg transition-all text-sm">
           Sign In <i class="fa fa-arrow-right ml-1"></i>
         </button>
+        <div class="text-center pt-2">
+          <p class="text-xs text-slate-400 font-semibold">New employee? <button onclick="toggleLoginRegister()" class="text-[#0F3C2C] font-black hover:underline">Register here</button></p>
+        </div>
+      </div>
+
+      <!-- Registration Fields -->
+      <div id="signup-fields" class="hidden space-y-4">
+        <div>
+          <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Full Name</label>
+          <input id="reg-name" type="text" placeholder="e.g. John Doe"
+            class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#0F3C2C] transition-all">
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Email Address</label>
+          <input id="reg-email" type="email" placeholder="john.doe@ecosphere.com"
+            class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#0F3C2C] transition-all">
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Password</label>
+          <input id="reg-pass" type="password" placeholder="••••••••"
+            class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#0F3C2C] transition-all">
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Department</label>
+            <select id="reg-dept" class="w-full border border-slate-200 rounded-xl px-3 py-3 text-xs focus:outline-none focus:ring-2 focus:ring-[#0F3C2C] transition-all bg-white">
+              <option value="IT Operations">IT Operations</option>
+              <option value="Sustainability R&D">Sustainability R&D</option>
+              <option value="Human Resources">Human Resources</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Team</label>
+            <select id="reg-team" class="w-full border border-slate-200 rounded-xl px-3 py-3 text-xs focus:outline-none focus:ring-2 focus:ring-[#0F3C2C] transition-all bg-white">
+              <option value="Green Ops Alpha">Green Ops Alpha</option>
+              <option value="Green Ops Beta">Green Ops Beta</option>
+              <option value="Green Ops Gamma">Green Ops Gamma</option>
+            </select>
+          </div>
+        </div>
+        <button onclick="submitRegistrationRequest()"
+          class="w-full bg-[#0F3C2C] hover:bg-[#09291D] text-white font-bold py-3.5 rounded-xl shadow-lg transition-all text-sm">
+          Submit Registration Request <i class="fa fa-paper-plane ml-1"></i>
+        </button>
+        <div class="text-center pt-2">
+          <p class="text-xs text-slate-400 font-semibold">Already registered? <button onclick="toggleLoginRegister()" class="text-[#0F3C2C] font-black hover:underline">Sign In here</button></p>
+        </div>
       </div>
     </div>
   </div>
@@ -327,6 +374,9 @@ let EVENT_REGISTRATIONS = {
 
 let tempEventImg = 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=400&fit=crop';
 
+let PENDING_REGISTRATIONS = [
+  { id: 1, name: 'Anoop Kumar', email: 'anoop@ecosphere.com', pass: 'AnoopEco123!', dept: 'IT Operations', team: 'Green Ops Beta' }
+];
 
 const EMP_CHALLENGES = [
   { name:'Zero Waste Week', xp:200, progress:70, status:'Active', deadline:'Nov 10' },
@@ -406,6 +456,101 @@ function attemptLogin() {
   err.classList.add('hidden');
   currentUser = user;
   initApp();
+}
+
+function toggleLoginRegister() {
+  const signin = document.getElementById('signin-fields');
+  const signup = document.getElementById('signup-fields');
+  if (signin.classList.contains('hidden')) {
+    signin.classList.remove('hidden');
+    signup.classList.add('hidden');
+  } else {
+    signin.classList.add('hidden');
+    signup.classList.remove('hidden');
+  }
+}
+
+function submitRegistrationRequest() {
+  const name = document.getElementById('reg-name').value.trim();
+  const email = document.getElementById('reg-email').value.trim();
+  const pass = document.getElementById('reg-pass').value.trim();
+  const dept = document.getElementById('reg-dept').value;
+  const team = document.getElementById('reg-team').value;
+
+  if (!name || !email || !pass) {
+    showToast('All fields are required!', 'error');
+    return;
+  }
+
+  PENDING_REGISTRATIONS.push({
+    id: PENDING_REGISTRATIONS.length + 1,
+    name, email, pass, dept, team
+  });
+
+  // Add toast and switch back
+  showToast('Registration request sent to Manager for approval!', 'success');
+  toggleLoginRegister();
+  
+  // Clear fields
+  document.getElementById('reg-name').value = '';
+  document.getElementById('reg-email').value = '';
+  document.getElementById('reg-pass').value = '';
+}
+
+function approveRegistration(id) {
+  const reg = PENDING_REGISTRATIONS.find(x => x.id === id);
+  if (!reg) return;
+
+  const key = 'new_emp_' + Date.now();
+  USERS[key] = {
+    email: reg.email,
+    pass: reg.pass,
+    role: 'employee',
+    name: reg.name,
+    title: 'ASSOCIATE ANALYST',
+    dept: reg.dept,
+    avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&h=100&fit=crop&crop=face',
+    empId: 'ECO-' + Math.floor(1000 + Math.random() * 9000),
+    age: 25,
+    gender: 'Male',
+    sector: reg.dept === 'IT Operations' ? 'Information Technology' : 'Operations',
+    team: reg.team,
+    manager: 'David Chen',
+    joined: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+    status: 'Active',
+    xp: 0,
+    rank: 10,
+    badges: ['🌱 New Joiner'],
+    scores: { overall: 70, env: 70, social: 70, gov: 70 }
+  };
+
+  DEPT_EMPLOYEES.push({
+    id: DEPT_EMPLOYEES.length + 1,
+    name: reg.name,
+    role: 'Associate Analyst',
+    avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&h=100&fit=crop&crop=face',
+    xp: 0,
+    esg: 70,
+    task: 'Setup onboarding profile',
+    status: 'To Do',
+    att: '100%',
+    perf: 'Good Standing',
+    events: 0,
+    email: reg.email,
+    team: reg.team
+  });
+
+  PENDING_REGISTRATIONS = PENDING_REGISTRATIONS.filter(x => x.id !== id);
+  showToast(`Employee "${reg.name}" approved and added to workspace!`, 'success');
+  buildPage('mgr-dashboard');
+}
+
+function rejectRegistration(id) {
+  const reg = PENDING_REGISTRATIONS.find(x => x.id === id);
+  if (!reg) return;
+  PENDING_REGISTRATIONS = PENDING_REGISTRATIONS.filter(x => x.id !== id);
+  showToast(`Registration request for "${reg.name}" rejected!`, 'info');
+  buildPage('mgr-dashboard');
 }
 
 function logout() {
@@ -1178,6 +1323,32 @@ function buildMgrDashboard() {
       ${ADMIN_ALERTS.slice(0,4).map(a=>alertCard(a)).join('')}
     </div>
   </div>
+
+  <!-- Pending Employee Approvals Card -->
+  ${PENDING_REGISTRATIONS.length > 0 ? `
+  <div class="card p-6 space-y-4 border-2 border-dashed border-[#0F3C2C]/20 bg-emerald-50/10 animate-pulse">
+    <div class="flex justify-between items-center">
+      ${sectionTitle('fa-user-clock','Pending Employee Registrations')}
+      <span class="stat-chip bg-amber-100 text-amber-800 font-bold">${PENDING_REGISTRATIONS.length} Pending Approval</span>
+    </div>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      ${PENDING_REGISTRATIONS.map(r => `
+        <div class="p-4 bg-white rounded-2xl border flex items-center justify-between shadow-sm">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 bg-slate-100 rounded-xl flex items-center justify-center text-slate-500 font-black text-sm">${r.name[0]}</div>
+            <div>
+              <p class="font-bold text-xs text-slate-800">${r.name}</p>
+              <p class="text-[9px] text-slate-400 font-semibold">${r.email} · ${r.team}</p>
+            </div>
+          </div>
+          <div class="flex gap-2">
+            <button onclick="approveRegistration(${r.id})" class="bg-[#0F3C2C] text-white text-[10px] font-black px-3 py-1.5 rounded-lg hover:bg-[#09291D] transition-all">Approve</button>
+            <button onclick="rejectRegistration(${r.id})" class="border border-red-200 text-red-600 text-[10px] font-black px-3 py-1.5 rounded-lg hover:bg-red-50 transition-all">Reject</button>
+          </div>
+        </div>
+      `).join('')}
+    </div>
+  </div>` : ''}
 
   <!-- Environmental Summary Card -->
   <div class="card p-6 space-y-4">

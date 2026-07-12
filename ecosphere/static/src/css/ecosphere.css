@@ -1,17 +1,227 @@
-/* EcoSphere — Phase 1 CSS stub
- *
- * This file is intentionally minimal in Phase 1.
- * Phase 4 will add:
- *   - ESG score ring / meter component styles
- *   - Category breakdown chart styles
- *   - Alert card styles
- *   - AI chat panel styles
- *   - Dashboard layout tokens (CSS custom properties)
- *
- * Keep this file for the asset bundle registration — removing it
- * will break the manifest assets declaration.
- */
+/* EcoSphere Curated Aesthetics CSS */
 
-.ecosphere_placeholder {
-    /* intentionally empty — Phase 4 fills this in */
+/* Color Tokens */
+:root {
+  --slate-900: #0f172a;
+  --slate-800: #1e293b;
+  --slate-700: #334155;
+  --slate-600: #475569;
+  --slate-100: #f1f5f9;
+  
+  --emerald-500: #10b981;
+  --emerald-600: #059669;
+  --emerald-700: #047857;
+  --emerald-800: #065f46;
+  --emerald-50: #ecfdf5;
+
+  --sky-500: #0ea5e9;
+  --sky-600: #0284c7;
+  --sky-700: #0369a1;
+  --sky-800: #075985;
+  --sky-50: #f0f9ff;
+
+  --amber-500: #f59e0b;
+  --amber-600: #d97706;
+  --amber-700: #b45309;
+  --amber-800: #92400e;
+  --amber-50: #fffbeb;
+
+  --indigo-500: #6366f1;
+  --indigo-600: #4f46e5;
+  --indigo-700: #4338ca;
+  --indigo-50: #e0e7ff;
+
+  --danger-light: #fef2f2;
+  --warning-light: #fffbeb;
+  --info-light: #f0f9ff;
+}
+
+/* Base Styles */
+.esg-dashboard-container {
+  color: var(--slate-700);
+}
+
+.bg-slate-900 {
+  background-color: var(--slate-900) !important;
+}
+
+.text-slate-800 {
+  color: var(--slate-800) !important;
+}
+
+.text-slate-700 {
+  color: var(--slate-700) !important;
+}
+
+.text-slate-600 {
+  color: var(--slate-600) !important;
+}
+
+.text-emerald-500 {
+  color: var(--emerald-500) !important;
+}
+
+.bg-emerald-500 {
+  background-color: var(--emerald-500) !important;
+}
+
+.text-emerald-700 {
+  color: var(--emerald-700) !important;
+}
+
+.text-emerald-800 {
+  color: var(--emerald-800) !important;
+}
+
+.bg-emerald-50 {
+  background-color: var(--emerald-50) !important;
+}
+
+.text-sky-500 {
+  color: var(--sky-500) !important;
+}
+
+.bg-sky-500 {
+  background-color: var(--sky-500) !important;
+}
+
+.text-sky-600 {
+  color: var(--sky-600) !important;
+}
+
+.text-sky-700 {
+  color: var(--sky-700) !important;
+}
+
+.text-sky-800 {
+  color: var(--sky-800) !important;
+}
+
+.bg-sky-50 {
+  background-color: var(--sky-50) !important;
+}
+
+.text-amber-500 {
+  color: var(--amber-500) !important;
+}
+
+.bg-amber-500 {
+  background-color: var(--amber-500) !important;
+}
+
+.text-amber-600 {
+  color: var(--amber-600) !important;
+}
+
+.text-amber-700 {
+  color: var(--amber-700) !important;
+}
+
+.text-amber-800 {
+  color: var(--amber-800) !important;
+}
+
+.bg-amber-50 {
+  background-color: var(--amber-50) !important;
+}
+
+.text-indigo-500 {
+  color: var(--indigo-500) !important;
+}
+
+.text-indigo-600 {
+  color: var(--indigo-600) !important;
+}
+
+.text-indigo-700 {
+  color: var(--indigo-700) !important;
+}
+
+.bg-indigo-50 {
+  background-color: var(--indigo-50) !important;
+}
+
+.bg-indigo-600 {
+  background-color: var(--indigo-600) !important;
+}
+
+.btn-indigo {
+  background-color: var(--indigo-600) !important;
+  color: white !important;
+  transition: background-color 0.2s ease-in-out;
+}
+
+.btn-indigo:hover {
+  background-color: var(--indigo-700) !important;
+}
+
+.btn-emerald {
+  background-color: var(--emerald-600) !important;
+  color: white !important;
+  transition: background-color 0.2s ease-in-out;
+}
+
+.btn-emerald:hover {
+  background-color: var(--emerald-700) !important;
+}
+
+.bg-danger-light {
+  background-color: var(--danger-light) !important;
+}
+
+.bg-warning-light {
+  background-color: var(--warning-light) !important;
+}
+
+.bg-info-light {
+  background-color: var(--info-light) !important;
+}
+
+/* Circular ring animations & colors */
+.esg-score-ring-svg {
+  transform: rotate(-90deg);
+}
+
+.esg-ring-fill.platinum {
+  stroke: #a855f7 !important; /* purple */
+}
+
+.esg-ring-fill.gold {
+  stroke: #eab308 !important; /* gold */
+}
+
+.esg-ring-fill.silver {
+  stroke: #64748b !important; /* slate */
+}
+
+.esg-ring-fill.bronze {
+  stroke: #b45309 !important; /* brown */
+}
+
+/* Cards & Layout transitions */
+.card {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.02) !important;
+}
+
+/* Floating AI Chat Assistant Window */
+.esg-ai-chat-panel-container input:focus {
+  border-color: var(--indigo-500) !important;
+  box-shadow: 0 0 0 2px var(--indigo-50) !important;
+}
+
+.cursor-pointer {
+  cursor: pointer;
+}
+
+.hover-bg-slate-50:hover {
+  background-color: #f1f5f9 !important;
+}
+
+.hover-bg-slate-200:hover {
+  background-color: #e2e8f0 !important;
 }

@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<templates xml:space="preserve">
+    <t t-name="ecosphere.EsgScoreRing" owl="1">
+        <div class="esg-score-ring-container d-flex flex-column align-items-center">
+            <div class="position-relative d-flex justify-content-center align-items-center" style="width: 120px; height: 120px;">
+                <svg class="esg-score-ring-svg" width="120" height="120" viewBox="0 0 100 100">
+                    <circle class="esg-ring-bg" cx="50" cy="50" r="40" stroke="#f1f5f9" stroke-width="8" fill="transparent"/>
+                    <circle t-att-class="'esg-ring-fill ' + scoreColorClass"
+                            cx="50" cy="50" r="40"
+                            stroke="url(#esgGradient)"
+                            stroke-width="8"
+                            fill="transparent"
+                            stroke-dasharray="251.2"
+                            t-att-stroke-dashoffset="strokeDashOffset"
+                            stroke-linecap="round"
+                            style="transform: rotate(-90deg); transform-origin: 50% 50%; transition: stroke-dashoffset 0.5s ease-out;"/>
+                    <defs>
+                        <linearGradient id="esgGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" stop-color="#10b981"/>
+                            <stop offset="100%" stop-color="#3b82f6"/>
+                        </linearGradient>
+                    </defs>
+                </svg>
+                <div class="position-absolute d-flex flex-column align-items-center">
+                    <span class="fs-3 fw-bold text-slate-800" t-out="props.score.toFixed(1)"/>
+                    <span class="fs-6 text-muted" t-out="tierLabel"/>
+                </div>
+            </div>
+            <span class="mt-2 fw-medium text-slate-700" t-out="props.label"/>
+        </div>
+    </t>
+</templates>

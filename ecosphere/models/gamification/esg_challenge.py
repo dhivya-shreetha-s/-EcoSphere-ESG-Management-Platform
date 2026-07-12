@@ -2,17 +2,11 @@
 """
 esg.challenge — Gamification challenges tied to verified data changes.
 
-ANTI-GAMING DESIGN:
-  - `metric_id` points to the specific ESG metric that must change in real data.
-  - `direction` mirrors the metric's direction: completing a challenge requires
-    a genuine data improvement, not just self-reporting.
-  - Challenges are verified by the Phase 5 engine by re-querying the live
-    esg.metric value; the system never accepts user-provided completion evidence.
-  - Disabling data collection (e.g., deleting attendance records) cannot
-    improve a score — the metric would simply show no data, not a higher value.
+Contains the challenge verification scheduler that awards XP and badges.
 """
 from odoo import api, fields, models
 from odoo.exceptions import ValidationError
+from datetime import date, timedelta
 
 
 class EsgChallenge(models.Model):
@@ -73,3 +67,67 @@ class EsgChallenge(models.Model):
         for rec in self:
             if rec.xp_reward <= 0:
                 raise ValidationError('XP Reward must be greater than 0.')
+
+    # ------------------------------------------------------------------ #
+    # Phase 5: Verification scheduling engine                             #
+    # ------------------------------------------------------------------ #
+    @api.model
+    def verify_active_challenges(self):
+        """
+        Verify completions.
+        Queries EsgDataAggregator for active scopes. If actual value satisfies
+        threshold, awards XP and Badge to the employee.
+        """
+        challenges = self.search([('active', '=', True)])
+        aggregator = self.env['esg.data.aggregator']
+
+        for chal in challenges:
+            if chal.scope == 'employee':
+                employees = self.env['hr.employee'].search([])
+                for emp in employees:
+                    # Check if already rewarded
+                    reward_exists = self.env['esg.reward'].search_count([
+                        ('employee_id', '=', emp.id),
+                        ('challenge_id', '=', chal.id)
+                    ])
+                    if reward_exists > 0:
+                        continue
+
+                    # Retrieve raw value over trailing 30 days
+                    start_date = date.today() - timedelta(days=30)
+                    end_date = date.today()
+                    actual_val = aggregator.get_raw_value(
+                        chal.metric_id, 'employee', emp.id, start_date, end_date
+                    )
+
+                    # Assess completion condition
+                    completed = False
+                    if chal.direction == 'higher_is_better' and actual_val >= chal.target_value:
+                        completed = True
+                    elif chal.direction == 'lower_is_better' and actual_val <= chal.target_value:
+                        completed = True
+
+                    if completed:
+                        # Write transaction log
+                        self.env['esg.xp.ledger'].create({
+                            'employee_id': emp.id,
+                            'delta_xp': chal.xp_reward,
+                            'reason': 'challenge_complete',
+                            'reference_model': 'esg.challenge',
+                            'reference_id': chal.id,
+                            'verified_by_data': True,
+                        })
+
+                        # Award badge reward
+                        if chal.badge_id:
+                            # Sum current XP for snapshot
+                            xps = self.env['esg.xp.ledger'].read_group(
+                                [('employee_id', '=', emp.id)], ['delta_xp:sum'], []
+                            )
+                            total_xp = xps[0].get('delta_xp') or 0
+                            self.env['esg.reward'].create({
+                                'employee_id': emp.id,
+                                'badge_id': chal.badge_id.id,
+                                'challenge_id': chal.id,
+                                'xp_at_award': total_xp,
+                            })

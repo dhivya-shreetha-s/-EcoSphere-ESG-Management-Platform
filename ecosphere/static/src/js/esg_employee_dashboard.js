@@ -38,6 +38,9 @@ export class EsgEmployeeDashboard extends Component {
                 this.state.employee = emps[0];
                 const empId = emps[0].id;
 
+                // Run onboarding check/create default goal
+                await this.orm.call("esg.goal", "check_or_create_onboarding_goal", [empId]);
+
                 // Fetch latest score
                 const scores = await this.orm.searchRead(
                     "esg.score",

@@ -1,0 +1,171 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <!-- ── esg.sector list view ───────────────────────────────── -->
+        <record id="view_esg_sector_list" model="ir.ui.view">
+            <field name="name">esg.sector.list</field>
+            <field name="model">esg.sector</field>
+            <field name="arch" type="xml">
+                <list string="ESG Sectors">
+                    <field name="sequence" widget="handle"/>
+                    <field name="name"/>
+                    <field name="code"/>
+                    <field name="department_count"/>
+                    <field name="active" optional="hide"/>
+                </list>
+            </field>
+        </record>
+
+        <!-- ── esg.sector form view ───────────────────────────────── -->
+        <record id="view_esg_sector_form" model="ir.ui.view">
+            <field name="name">esg.sector.form</field>
+            <field name="model">esg.sector</field>
+            <field name="arch" type="xml">
+                <form string="ESG Sector">
+                    <sheet>
+                        <group>
+                            <group>
+                                <field name="name"/>
+                                <field name="code"/>
+                                <field name="sequence"/>
+                            </group>
+                            <group>
+                                <field name="active"/>
+                                <field name="department_count" readonly="1"/>
+                            </group>
+                        </group>
+                        <field name="description" placeholder="Describe this sector…"/>
+                        <notebook>
+                            <page string="Departments">
+                                <field name="department_ids">
+                                    <list>
+                                        <field name="name"/>
+                                        <field name="manager_id"/>
+                                    </list>
+                                </field>
+                            </page>
+                        </notebook>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <!-- ── esg.category list/form ────────────────────────────── -->
+        <record id="view_esg_category_list" model="ir.ui.view">
+            <field name="name">esg.category.list</field>
+            <field name="model">esg.category</field>
+            <field name="arch" type="xml">
+                <list string="ESG Categories">
+                    <field name="sequence" widget="handle"/>
+                    <field name="name"/>
+                    <field name="code"/>
+                    <field name="weight" string="Weight (%)"/>
+                </list>
+            </field>
+        </record>
+
+        <record id="view_esg_category_form" model="ir.ui.view">
+            <field name="name">esg.category.form</field>
+            <field name="model">esg.category</field>
+            <field name="arch" type="xml">
+                <form string="ESG Category">
+                    <sheet>
+                        <group>
+                            <field name="name"/>
+                            <field name="code"/>
+                            <field name="weight" string="Weight (%)"/>
+                            <field name="color" widget="color_picker"/>
+                            <field name="sequence"/>
+                        </group>
+                        <field name="description"/>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <!-- ── esg.metric list/form ───────────────────────────────── -->
+        <record id="view_esg_metric_list" model="ir.ui.view">
+            <field name="name">esg.metric.list</field>
+            <field name="model">esg.metric</field>
+            <field name="arch" type="xml">
+                <list string="ESG Metrics">
+                    <field name="sequence" widget="handle"/>
+                    <field name="name"/>
+                    <field name="category_id"/>
+                    <field name="unit"/>
+                    <field name="weight" string="Weight (%)"/>
+                    <field name="direction"/>
+                    <field name="active" optional="hide"/>
+                </list>
+            </field>
+        </record>
+
+        <record id="view_esg_metric_form" model="ir.ui.view">
+            <field name="name">esg.metric.form</field>
+            <field name="model">esg.metric</field>
+            <field name="arch" type="xml">
+                <form string="ESG Metric">
+                    <sheet>
+                        <group>
+                            <group>
+                                <field name="name"/>
+                                <field name="category_id"/>
+                                <field name="data_source_id"/>
+                                <field name="unit"/>
+                            </group>
+                            <group>
+                                <field name="weight" string="Within-Category Weight (%)"/>
+                                <field name="direction"/>
+                                <field name="min_value"/>
+                                <field name="max_value"/>
+                                <field name="active"/>
+                            </group>
+                        </group>
+                        <field name="description" placeholder="Explain what this metric measures…"/>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <!-- ── esg.data.source list ───────────────────────────────── -->
+        <record id="view_esg_data_source_list" model="ir.ui.view">
+            <field name="name">esg.data.source.list</field>
+            <field name="model">esg.data.source</field>
+            <field name="arch" type="xml">
+                <list string="ESG Data Sources">
+                    <field name="name"/>
+                    <field name="model_name"/>
+                    <field name="field_name"/>
+                    <field name="installed" string="Available" widget="boolean"/>
+                </list>
+            </field>
+        </record>
+
+        <!-- ── Window actions ────────────────────────────────────── -->
+        <record id="action_esg_sector_list" model="ir.actions.act_window">
+            <field name="name">ESG Sectors</field>
+            <field name="res_model">esg.sector</field>
+            <field name="view_mode">list,form</field>
+        </record>
+
+        <record id="action_esg_category_list" model="ir.actions.act_window">
+            <field name="name">ESG Categories &amp; Weights</field>
+            <field name="res_model">esg.category</field>
+            <field name="view_mode">list,form</field>
+        </record>
+
+        <record id="action_esg_metric_list" model="ir.actions.act_window">
+            <field name="name">ESG Metrics</field>
+            <field name="res_model">esg.metric</field>
+            <field name="view_mode">list,form</field>
+        </record>
+
+        <record id="action_esg_data_source_list" model="ir.actions.act_window">
+            <field name="name">ESG Data Sources</field>
+            <field name="res_model">esg.data.source</field>
+            <field name="view_mode">list,form</field>
+        </record>
+
+    </data>
+</odoo>

@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <!--
+        ================================================================
+        TOP-LEVEL ESG APPLICATION MENU
+        Odoo's native group-based menu visibility handles role hiding —
+        no custom router needed (Section 6 of the master prompt).
+
+        Phase 4 will replace the stub window actions below with real
+        OWL dashboard client actions.
+        ================================================================
+        -->
+
+        <menuitem
+            id="menu_ecosphere_root"
+            name="ESG"
+            sequence="95"
+            web_icon="ecosphere,static/description/icon.png"
+            groups="ecosphere.group_esg_employee"/>
+
+        <!-- ── Dashboard ─────────────────────────────────────────── -->
+        <menuitem
+            id="menu_ecosphere_dashboard"
+            name="Dashboard"
+            parent="menu_ecosphere_root"
+            sequence="10"
+            action="action_esg_score_list"
+            groups="ecosphere.group_esg_employee"/>
+
+        <!-- ── Events ────────────────────────────────────────────── -->
+        <menuitem
+            id="menu_ecosphere_events"
+            name="Events"
+            parent="menu_ecosphere_root"
+            sequence="20"
+            action="action_esg_csr_event_list"
+            groups="ecosphere.group_esg_employee"/>
+
+        <!-- ── Alerts ────────────────────────────────────────────── -->
+        <menuitem
+            id="menu_ecosphere_alerts"
+            name="Alerts"
+            parent="menu_ecosphere_root"
+            sequence="30"
+            action="action_esg_alert_list"
+            groups="ecosphere.group_esg_employee"/>
+
+        <!-- ── Reports (P2 — placeholder) ────────────────────────── -->
+        <menuitem
+            id="menu_ecosphere_reports"
+            name="Reports"
+            parent="menu_ecosphere_root"
+            sequence="40"
+            groups="ecosphere.group_esg_manager"/>
+
+        <!-- ── Settings ──────────────────────────────────────────── -->
+        <menuitem
+            id="menu_ecosphere_settings"
+            name="Settings"
+            parent="menu_ecosphere_root"
+            sequence="90"
+            groups="ecosphere.group_esg_admin"/>
+
+        <!-- Settings sub-menus (admin only) -->
+        <menuitem
+            id="menu_ecosphere_sectors"
+            name="Sectors"
+            parent="menu_ecosphere_settings"
+            sequence="10"
+            action="action_esg_sector_list"
+            groups="ecosphere.group_esg_admin"/>
+
+        <menuitem
+            id="menu_ecosphere_categories"
+            name="ESG Categories &amp; Weights"
+            parent="menu_ecosphere_settings"
+            sequence="20"
+            action="action_esg_category_list"
+            groups="ecosphere.group_esg_admin"/>
+
+        <menuitem
+            id="menu_ecosphere_metrics"
+            name="Metrics"
+            parent="menu_ecosphere_settings"
+            sequence="30"
+            action="action_esg_metric_list"
+            groups="ecosphere.group_esg_admin"/>
+
+        <menuitem
+            id="menu_ecosphere_data_sources"
+            name="Data Sources"
+            parent="menu_ecosphere_settings"
+            sequence="40"
+            action="action_esg_data_source_list"
+            groups="ecosphere.group_esg_admin"/>
+
+    </data>
+</odoo>

@@ -1,0 +1,239 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="0">
+
+        <!--
+        ================================================================
+        SECURITY GROUPS
+        Three groups in a strict hierarchy: Employee ⊂ Manager ⊂ Admin.
+        Each implied_ids line means the higher group automatically has
+        all permissions of the lower group.
+        ================================================================
+        -->
+
+        <record id="group_esg_employee" model="res.groups">
+            <field name="name">ESG Employee</field>
+            <field name="category_id" ref="base.module_category_human_resources"/>
+            <field name="comment">
+                Access to own ESG dashboard: personal score, own action items,
+                own alerts, own XP/badges, CSR event registration.
+            </field>
+        </record>
+
+        <record id="group_esg_manager" model="res.groups">
+            <field name="name">ESG Manager</field>
+            <field name="category_id" ref="base.module_category_human_resources"/>
+            <field name="implied_ids" eval="[(4, ref('group_esg_employee'))]"/>
+            <field name="comment">
+                Access to own department's ESG data: department score, team
+                analytics, department-scoped alerts, CSR event management,
+                employee directory (own dept only — no cross-dept individual data).
+            </field>
+        </record>
+
+        <record id="group_esg_admin" model="res.groups">
+            <field name="name">ESG Admin</field>
+            <field name="category_id" ref="base.module_category_human_resources"/>
+            <field name="implied_ids" eval="[(4, ref('group_esg_manager'))]"/>
+            <field name="comment">
+                Full org-wide access: all scores, all alerts, all departments,
+                sector management, score weight configuration, AI logs.
+            </field>
+        </record>
+
+        <!--
+        ================================================================
+        RECORD RULES
+        Server-side enforcement — not cosmetic UI hiding.
+        An Employee's ORM call must be INCAPABLE of returning another
+        employee's individual data regardless of what the UI shows.
+
+        Rule naming convention:
+          esg_<model>_<group>_rule
+        ================================================================
+        -->
+
+        <!-- ── esg.score ─────────────────────────────────────────── -->
+
+        <!-- Employee: sees only own employee-scope scores -->
+        <record id="esg_score_employee_rule" model="ir.rule">
+            <field name="name">ESG Score: Employee sees own records only</field>
+            <field name="model_id" ref="model_esg_score"/>
+            <field name="groups" eval="[(4, ref('group_esg_employee'))]"/>
+            <field name="domain_force">
+                [('scope', '=', 'employee'),
+                 ('employee_id', '=', user.employee_id.id)]
+            </field>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="False"/>
+            <field name="perm_create" eval="False"/>
+            <field name="perm_unlink" eval="False"/>
+        </record>
+
+        <!-- Manager: sees own employee score + own department/sector/org scores -->
+        <record id="esg_score_manager_rule" model="ir.rule">
+            <field name="name">ESG Score: Manager sees own dept scope</field>
+            <field name="model_id" ref="model_esg_score"/>
+            <field name="groups" eval="[(4, ref('group_esg_manager'))]"/>
+            <field name="domain_force">
+                ['|', '|', '|',
+                    ('scope', '=', 'org'),
+                    '&', ('scope', '=', 'sector'),
+                         ('sector_id.department_ids.id', 'in', [user.employee_id.department_id.id]),
+                    '&', ('scope', '=', 'department'),
+                         ('department_id', '=', user.employee_id.department_id.id),
+                    '&', ('scope', '=', 'employee'),
+                         ('employee_id.department_id', '=', user.employee_id.department_id.id)
+                ]
+            </field>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="True"/>
+            <field name="perm_create" eval="True"/>
+            <field name="perm_unlink" eval="False"/>
+        </record>
+
+        <!-- Admin: unrestricted -->
+        <record id="esg_score_admin_rule" model="ir.rule">
+            <field name="name">ESG Score: Admin sees all</field>
+            <field name="model_id" ref="model_esg_score"/>
+            <field name="groups" eval="[(4, ref('group_esg_admin'))]"/>
+            <field name="domain_force">[(1, '=', 1)]</field>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="True"/>
+            <field name="perm_create" eval="True"/>
+            <field name="perm_unlink" eval="True"/>
+        </record>
+
+        <!-- ── esg.alert ─────────────────────────────────────────── -->
+
+        <!-- Employee: only own self-scope alerts -->
+        <record id="esg_alert_employee_rule" model="ir.rule">
+            <field name="name">ESG Alert: Employee sees own alerts only</field>
+            <field name="model_id" ref="model_esg_alert"/>
+            <field name="groups" eval="[(4, ref('group_esg_employee'))]"/>
+            <field name="domain_force">
+                [('target_role', '=', 'employee'),
+                 ('scope', '=', 'self'),
+                 ('employee_id', '=', user.employee_id.id)]
+            </field>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="False"/>
+            <field name="perm_create" eval="False"/>
+            <field name="perm_unlink" eval="False"/>
+        </record>
+
+        <!-- Manager: employee + manager role alerts for own dept -->
+        <record id="esg_alert_manager_rule" model="ir.rule">
+            <field name="name">ESG Alert: Manager sees own dept alerts</field>
+            <field name="model_id" ref="model_esg_alert"/>
+            <field name="groups" eval="[(4, ref('group_esg_manager'))]"/>
+            <field name="domain_force">
+                [('target_role', 'in', ['employee', 'manager']),
+                 '|',
+                     ('scope', '=', 'org'),
+                     '|',
+                         '&', ('scope', '=', 'department'),
+                              ('department_id', '=', user.employee_id.department_id.id),
+                         '&', ('scope', '=', 'self'),
+                              ('employee_id.department_id', '=', user.employee_id.department_id.id)
+                ]
+            </field>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="True"/>
+            <field name="perm_create" eval="False"/>
+            <field name="perm_unlink" eval="False"/>
+        </record>
+
+        <!-- Admin: all alerts -->
+        <record id="esg_alert_admin_rule" model="ir.rule">
+            <field name="name">ESG Alert: Admin sees all</field>
+            <field name="model_id" ref="model_esg_alert"/>
+            <field name="groups" eval="[(4, ref('group_esg_admin'))]"/>
+            <field name="domain_force">[(1, '=', 1)]</field>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="True"/>
+            <field name="perm_create" eval="True"/>
+            <field name="perm_unlink" eval="True"/>
+        </record>
+
+        <!-- ── esg.recommendation ────────────────────────────────── -->
+
+        <!-- Employee: own recommendations only -->
+        <record id="esg_recommendation_employee_rule" model="ir.rule">
+            <field name="name">ESG Recommendation: Employee sees own</field>
+            <field name="model_id" ref="model_esg_recommendation"/>
+            <field name="groups" eval="[(4, ref('group_esg_employee'))]"/>
+            <field name="domain_force">
+                [('scope', '=', 'employee'),
+                 ('employee_id', '=', user.employee_id.id)]
+            </field>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="True"/>
+            <field name="perm_create" eval="False"/>
+            <field name="perm_unlink" eval="False"/>
+        </record>
+
+        <!-- Manager: own dept + own individual recommendations -->
+        <record id="esg_recommendation_manager_rule" model="ir.rule">
+            <field name="name">ESG Recommendation: Manager sees own dept</field>
+            <field name="model_id" ref="model_esg_recommendation"/>
+            <field name="groups" eval="[(4, ref('group_esg_manager'))]"/>
+            <field name="domain_force">
+                ['|', '|',
+                    ('scope', '=', 'org'),
+                    '&', ('scope', '=', 'department'),
+                         ('department_id', '=', user.employee_id.department_id.id),
+                    '&', ('scope', '=', 'employee'),
+                         ('employee_id.department_id', '=', user.employee_id.department_id.id)
+                ]
+            </field>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="True"/>
+            <field name="perm_create" eval="True"/>
+            <field name="perm_unlink" eval="False"/>
+        </record>
+
+        <!-- Admin: all -->
+        <record id="esg_recommendation_admin_rule" model="ir.rule">
+            <field name="name">ESG Recommendation: Admin sees all</field>
+            <field name="model_id" ref="model_esg_recommendation"/>
+            <field name="groups" eval="[(4, ref('group_esg_admin'))]"/>
+            <field name="domain_force">[(1, '=', 1)]</field>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="True"/>
+            <field name="perm_create" eval="True"/>
+            <field name="perm_unlink" eval="True"/>
+        </record>
+
+        <!-- ── esg.xp.ledger ─────────────────────────────────────── -->
+
+        <!-- Employee: own XP entries only (read-only) -->
+        <record id="esg_xp_ledger_employee_rule" model="ir.rule">
+            <field name="name">ESG XP Ledger: Employee reads own entries</field>
+            <field name="model_id" ref="model_esg_xp_ledger"/>
+            <field name="groups" eval="[(4, ref('group_esg_employee'))]"/>
+            <field name="domain_force">
+                [('employee_id', '=', user.employee_id.id)]
+            </field>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="False"/>
+            <field name="perm_create" eval="False"/>
+            <field name="perm_unlink" eval="False"/>
+        </record>
+
+        <!-- Manager: own dept employees' XP (aggregate use; read-only) -->
+        <record id="esg_xp_ledger_manager_rule" model="ir.rule">
+            <field name="name">ESG XP Ledger: Manager reads own dept</field>
+            <field name="model_id" ref="model_esg_xp_ledger"/>
+            <field name="groups" eval="[(4, ref('group_esg_manager'))]"/>
+            <field name="domain_force">
+                [('employee_id.department_id', '=', user.employee_id.department_id.id)]
+            </field>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="False"/>
+            <field name="perm_create" eval="True"/>
+            <field name="perm_unlink" eval="False"/>
+        </record>
+
+    </data>
+</odoo>

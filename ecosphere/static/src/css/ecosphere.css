@@ -1,0 +1,17 @@
+/* EcoSphere — Phase 1 CSS stub
+ *
+ * This file is intentionally minimal in Phase 1.
+ * Phase 4 will add:
+ *   - ESG score ring / meter component styles
+ *   - Category breakdown chart styles
+ *   - Alert card styles
+ *   - AI chat panel styles
+ *   - Dashboard layout tokens (CSS custom properties)
+ *
+ * Keep this file for the asset bundle registration — removing it
+ * will break the manifest assets declaration.
+ */
+
+.ecosphere_placeholder {
+    /* intentionally empty — Phase 4 fills this in */
+}

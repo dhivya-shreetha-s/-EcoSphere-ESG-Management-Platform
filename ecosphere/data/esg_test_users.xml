@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="0">
+        <!--
+        ================================================================
+        TEST USERS — Phase 1 Definition of Done verification
+        These three logins are used in every phase's DoD check.
+        noupdate="0" so they're recreated on upgrade (useful during dev).
+
+        IMPORTANT: Change passwords before any public/staging deployment.
+        These are development-only accounts for the hackathon team.
+        ================================================================
+        -->
+
+        <!-- ── Employee test user ─────────────────────────────────── -->
+        <record id="esg_test_user_employee" model="res.users">
+            <field name="name">ESG Test Employee</field>
+            <field name="login">esg_emp_test@example.com</field>
+            <field name="password">EcoSphereEmp2024!</field>
+            <field name="groups_id" eval="[
+                (4, ref('base.group_user')),
+                (4, ref('ecosphere.group_esg_employee')),
+            ]"/>
+        </record>
+
+        <!-- ── Manager test user ──────────────────────────────────── -->
+        <record id="esg_test_user_manager" model="res.users">
+            <field name="name">ESG Test Manager</field>
+            <field name="login">esg_mgr_test@example.com</field>
+            <field name="password">EcoSphereMgr2024!</field>
+            <field name="groups_id" eval="[
+                (4, ref('base.group_user')),
+                (4, ref('ecosphere.group_esg_manager')),
+            ]"/>
+        </record>
+
+        <!-- ── Admin test user ────────────────────────────────────── -->
+        <record id="esg_test_user_admin" model="res.users">
+            <field name="name">ESG Test Admin</field>
+            <field name="login">esg_admin_test@example.com</field>
+            <field name="password">EcoSphereAdm2024!</field>
+            <field name="groups_id" eval="[
+                (4, ref('base.group_user')),
+                (4, ref('ecosphere.group_esg_admin')),
+            ]"/>
+        </record>
+
+    </data>
+</odoo>

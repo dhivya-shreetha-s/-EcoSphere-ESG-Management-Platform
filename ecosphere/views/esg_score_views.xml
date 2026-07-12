@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <!-- ── esg.score list view ────────────────────────────────── -->
+        <record id="view_esg_score_list" model="ir.ui.view">
+            <field name="name">esg.score.list</field>
+            <field name="model">esg.score</field>
+            <field name="arch" type="xml">
+                <list string="ESG Scores" default_order="period_start desc">
+                    <field name="scope"/>
+                    <field name="employee_id" optional="show"/>
+                    <field name="department_id" optional="show"/>
+                    <field name="sector_id" optional="hide"/>
+                    <field name="period_start"/>
+                    <field name="period_end"/>
+                    <field name="score_env" string="E"/>
+                    <field name="score_social" string="S"/>
+                    <field name="score_gov" string="G"/>
+                    <field name="score_overall" string="Overall"/>
+                    <field name="score_label" string="Tier"/>
+                    <field name="computed_at" optional="hide"/>
+                </list>
+            </field>
+        </record>
+
+        <!-- ── esg.score form view ────────────────────────────────── -->
+        <record id="view_esg_score_form" model="ir.ui.view">
+            <field name="name">esg.score.form</field>
+            <field name="model">esg.score</field>
+            <field name="arch" type="xml">
+                <form string="ESG Score">
+                    <sheet>
+                        <group string="Subject">
+                            <field name="scope"/>
+                            <field name="employee_id"
+                                   attrs="{'invisible': [('scope', '!=', 'employee')],
+                                           'required': [('scope', '=', 'employee')]}"/>
+                            <field name="department_id"
+                                   attrs="{'invisible': [('scope', '!=', 'department')],
+                                           'required': [('scope', '=', 'department')]}"/>
+                            <field name="sector_id"
+                                   attrs="{'invisible': [('scope', '!=', 'sector')],
+                                           'required': [('scope', '=', 'sector')]}"/>
+                        </group>
+                        <group string="Period">
+                            <field name="period_start"/>
+                            <field name="period_end"/>
+                        </group>
+                        <group string="Scores (0 – 100)">
+                            <group>
+                                <field name="score_env" string="Environmental"/>
+                                <field name="score_social" string="Social"/>
+                                <field name="score_gov" string="Governance"/>
+                            </group>
+                            <group>
+                                <field name="score_overall" string="Overall (Composite)"/>
+                                <field name="score_label" string="ESG Tier"/>
+                                <field name="suggested_esg_bonus_pct"
+                                       string="Suggested ESG Bonus (%) — SUGGESTION ONLY"/>
+                                <field name="computed_at" readonly="1"/>
+                            </group>
+                        </group>
+                        <notebook>
+                            <page string="Factor Breakdown">
+                                <field name="factor_breakdown"
+                                       readonly="1"
+                                       widget="ace"
+                                       options="{'mode': 'json'}"
+                                       placeholder="Populated by Phase 2 scoring engine…"/>
+                            </page>
+                            <page string="AI Explanation">
+                                <field name="explanation"
+                                       readonly="1"
+                                       placeholder="Populated by Phase 3 Grok AI layer…"/>
+                            </page>
+                        </notebook>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <!-- ── Window action ─────────────────────────────────────── -->
+        <record id="action_esg_score_list" model="ir.actions.act_window">
+            <field name="name">ESG Scores</field>
+            <field name="res_model">esg.score</field>
+            <field name="view_mode">list,form</field>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">
+                    No ESG scores yet. Run the scoring engine after setting up
+                    metrics and data sources.
+                </p>
+            </field>
+        </record>
+
+    </data>
+</odoo>

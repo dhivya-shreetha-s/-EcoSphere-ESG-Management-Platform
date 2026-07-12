@@ -2,25 +2,8 @@
 """
 esg.score — The central output record of the EcoSphere scoring engine.
 
-One record per (subject × period). Subject is identified by exactly one of:
-  - employee_id  (scope = 'employee')
-  - department_id (scope = 'department')
-  - sector_id    (scope = 'sector')
-  - (none)       (scope = 'org')
-
-The scoring engine in Phase 2 populates:
-  - score_env, score_social, score_gov  (0–100 each)
-  - score_overall                        (weighted composite, 0–100)
-  - score_label                          (Bronze/Silver/Gold/Platinum tier)
-  - factor_breakdown                     (JSON — which metrics contributed what)
-  - suggested_esg_bonus_pct             (computed suggestion; NEVER a payroll write)
-
-The Grok AI layer in Phase 3 populates:
-  - explanation                          (plain-language narrative; fallback = empty)
-
-IMPORTANT: `factor_breakdown` is stored as JSON text in Phase 1 for simplicity.
-If Phase 2 determines a normalised One2many child model is needed for richer
-querying, flag it before Phase 2 execution starts (see plan note on this field).
+Contains the real-time weighted scoring engine calculation math and the
+hierarchical rollup logic.
 """
 import json
 from odoo import api, fields, models
@@ -175,6 +158,137 @@ class EsgScore(models.Model):
         string='Computed At',
         help='Timestamp of last scoring engine run for this record.',
     )
+
+    # ------------------------------------------------------------------ #
+    # Calculations Engine                                                  #
+    # ------------------------------------------------------------------ #
+    def action_compute_score(self):
+        """
+        Executes the scoring calculation for the record.
+        1. Gathers active categories and weights.
+        2. Loops through active metrics, pulling raw values via EsgDataAggregator.
+        3. Normalizes each value to 0-100.
+        4. Rolls up category sub-scores.
+        5. Computes composite score and suggested bonus.
+        6. Writes explainability details to factor_breakdown.
+        """
+        self.ensure_one()
+        categories = self.env['esg.category'].search([])
+        metrics = self.env['esg.metric'].search([('active', '=', True)])
+        aggregator = self.env['esg.data.aggregator']
+
+        # Determine target record ID based on scope
+        target_id = False
+        if self.scope == 'employee':
+            target_id = self.employee_id.id
+        elif self.scope == 'department':
+            target_id = self.department_id.id
+        elif self.scope == 'sector':
+            target_id = self.sector_id.id
+
+        breakdown_metrics = []
+        category_scores = {}
+        category_total_weights = {}
+
+        # Initialise rollups
+        for cat in categories:
+            category_scores[cat.code] = 0.0
+            category_total_weights[cat.code] = 0.0
+
+        for metric in metrics:
+            raw_val = aggregator.get_raw_value(
+                metric, self.scope, target_id, self.period_start, self.period_end
+            )
+            norm_score = self._normalize_value(metric, raw_val)
+            
+            cat_code = metric.category_id.code
+            category_scores[cat_code] += norm_score * metric.weight
+            category_total_weights[cat_code] += metric.weight
+
+            breakdown_metrics.append({
+                'id': metric.id,
+                'name': metric.name,
+                'category': cat_code,
+                'raw_value': raw_val,
+                'unit': metric.unit or '',
+                'normalized_score': norm_score,
+                'weight_within_category': metric.weight,
+            })
+
+        # Calculate category averages
+        final_scores = {}
+        for cat in categories:
+            code = cat.code
+            total_weight = category_total_weights[code]
+            if total_weight > 0:
+                final_scores[code] = category_scores[code] / total_weight
+            else:
+                final_scores[code] = 100.0  # safe default
+
+        # Calculate overall weighted score
+        overall_numerator = 0.0
+        overall_denominator = 0.0
+        for cat in categories:
+            overall_numerator += final_scores[cat.code] * cat.weight
+            overall_denominator += cat.weight
+
+        overall_score = 0.0
+        if overall_denominator > 0:
+            overall_score = overall_numerator / overall_denominator
+
+        # Suggested ESG bonus: up to 10% maximum depending on overall score
+        suggested_bonus = overall_score / 10.0
+
+        # Construct final factor breakdown
+        breakdown_categories = {}
+        for cat in categories:
+            breakdown_categories[cat.code] = {
+                'name': cat.name,
+                'weight': cat.weight,
+                'score': round(final_scores[cat.code], 2),
+            }
+
+        # Calculate relative overall contribution for each metric
+        for item in breakdown_metrics:
+            cat_code = item['category']
+            cat_weight = breakdown_categories[cat_code]['weight']
+            metric_weight = item['weight_within_category']
+            total_metric_weight = category_total_weights[cat_code] or 1.0
+            
+            # contribution = (normalized_score * metric_weight / total_metric_weight) * (cat_weight / 100)
+            contribution = (item['normalized_score'] * metric_weight / total_metric_weight) * (cat_weight / 100.0)
+            item['contribution_to_overall'] = round(contribution, 2)
+
+        breakdown_data = {
+            'categories': breakdown_categories,
+            'metrics': breakdown_metrics,
+        }
+
+        self.write({
+            'score_env': final_scores.get('E', 0.0),
+            'score_social': final_scores.get('S', 0.0),
+            'score_gov': final_scores.get('G', 0.0),
+            'score_overall': overall_score,
+            'suggested_esg_bonus_pct': suggested_bonus,
+            'factor_breakdown': json.dumps(breakdown_data, indent=2),
+            'computed_at': fields.Datetime.now(),
+        })
+
+    def _normalize_value(self, metric, raw_value):
+        """Normalize raw value to 0-100 scale using bounds and direction."""
+        span = metric.max_value - metric.min_value
+        if span <= 0:
+            return 100.0
+
+        # Clip raw value to bounds
+        clipped = max(metric.min_value, min(metric.max_value, raw_value))
+
+        if metric.direction == 'higher_is_better':
+            score = ((clipped - metric.min_value) / span) * 100.0
+        else:  # lower_is_better
+            score = ((metric.max_value - clipped) / span) * 100.0
+
+        return round(score, 2)
 
     # ------------------------------------------------------------------ #
     # Validation                                                           #

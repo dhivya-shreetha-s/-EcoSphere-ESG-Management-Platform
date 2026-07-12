@@ -306,7 +306,26 @@ const EMP_TASKS = [
   { name:'Sustainability Workshop', priority:'Medium', by:'David Chen', deadline:'Nov 05', progress:20, status:'In Progress' },
   { name:'Supplier Diversity Report', priority:'Low', by:'Sarah Li', deadline:'Oct 20', progress:100, status:'Done' },
   { name:'Carbon Offset Analysis', priority:'High', by:'David Chen', deadline:'Nov 15', progress:40, status:'In Progress' },
+  { name:'Review Green Energy Supplier Contract', priority:'Medium', by:'David Chen', deadline:'Nov 20', progress:0, status:'To Do' },
+  { name:'Prepare ESG Presentation for AGM', priority:'Low', by:'Sarah Li', deadline:'Nov 25', progress:0, status:'To Do' },
 ];
+
+let EVENT_REGISTRATIONS = {
+  1: [
+    { name: 'Elena Rodriguez', team: 'Green Ops Alpha', avatar: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=60&h=60&fit=crop&crop=face' },
+    { name: 'Priya Nair', team: 'Green Ops Alpha', avatar: 'https://images.unsplash.com/photo-1551836022-d5d88e9218df?w=60&h=60&fit=crop&crop=face' }
+  ],
+  2: [
+    { name: 'Marcus Thorne', team: 'Green Ops Beta', avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=60&h=60&fit=crop&crop=face' }
+  ],
+  3: [
+    { name: 'James Kowalski', team: 'Green Ops Gamma', avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=60&h=60&fit=crop&crop=face' }
+  ],
+  4: []
+};
+
+let tempEventImg = 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=400&fit=crop';
+
 
 const EMP_CHALLENGES = [
   { name:'Zero Waste Week', xp:200, progress:70, status:'Active', deadline:'Nov 10' },
@@ -431,7 +450,7 @@ function firstPage() {
 // =========================================================
 const NAV_CONFIG = {
   employee: [
-    { icon:'fa-grid-horizontal', label:'Dashboard', page:'emp-dashboard' },
+    { icon:'fa-gauge', label:'Dashboard', page:'emp-dashboard' },
     { icon:'fa-list-check', label:'My Tasks', page:'emp-tasks' },
     { icon:'fa-leaf', label:'My ESG', page:'emp-esg' },
     { icon:'fa-calendar-check', label:'CSR Events', page:'emp-events' },
@@ -439,16 +458,16 @@ const NAV_CONFIG = {
     { icon:'fa-file-shield', label:'Policies', page:'emp-policies' },
   ],
   manager: [
-    { icon:'fa-grid-horizontal', label:'Dashboard', page:'mgr-dashboard' },
+    { icon:'fa-gauge', label:'Dashboard', page:'mgr-dashboard' },
     { icon:'fa-users', label:'Employee Directory', page:'mgr-employees' },
-    { icon:'fa-kanban', label:'Task Management', page:'mgr-tasks' },
+    { icon:'fa-tasks', label:'Task Management', page:'mgr-tasks' },
     { icon:'fa-calendar-check', label:'CSR Events', page:'mgr-events' },
     { icon:'fa-people-group', label:'Teams', page:'mgr-teams' },
     { icon:'fa-star', label:'Rewards & Promotions', page:'mgr-rewards' },
     { icon:'fa-chart-bar', label:'Analytics', page:'mgr-analytics' },
   ],
   admin: [
-    { icon:'fa-grid-horizontal', label:'Command Center', page:'adm-dashboard' },
+    { icon:'fa-gauge', label:'Command Center', page:'adm-dashboard' },
     { icon:'fa-industry', label:'Sector Management', page:'adm-sectors' },
     { icon:'fa-users', label:'Employee Overview', page:'adm-employees' },
     { icon:'fa-chart-line', label:'Org Analytics', page:'adm-analytics' },
@@ -591,6 +610,9 @@ function toggleEventReg(id, btn) {
     registeredEvents.delete(id);
     e.slots++;
     e.participants--;
+    if (EVENT_REGISTRATIONS[id]) {
+      EVENT_REGISTRATIONS[id] = EVENT_REGISTRATIONS[id].filter(x => x.name !== currentUser.name);
+    }
     showToast(`Deregistered from: ${e.name}`, 'info');
   } else {
     if (e.slots <= 0) {
@@ -600,6 +622,10 @@ function toggleEventReg(id, btn) {
     registeredEvents.add(id);
     e.slots--;
     e.participants++;
+    if (!EVENT_REGISTRATIONS[id]) EVENT_REGISTRATIONS[id] = [];
+    if (!EVENT_REGISTRATIONS[id].some(x => x.name === currentUser.name)) {
+      EVENT_REGISTRATIONS[id].push({ name: currentUser.name, team: currentUser.team || 'Green Ops Alpha', avatar: currentUser.avatar });
+    }
     showToast(`Registered for: ${e.name}`, 'success');
   }
   // Add a new notification
@@ -629,6 +655,20 @@ function buildEmpDashboard() {
   const u = currentUser;
   const el = document.getElementById('page-emp-dashboard');
   el.innerHTML = `
+  <!-- Header with logo -->
+  <div class="flex items-center gap-3 mb-6">
+    <div class="w-10 h-10 bg-[#0F3C2C] rounded-2xl flex items-center justify-center shadow-md">
+      <svg class="w-6 h-6 text-emerald-400" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2ZM13 19.93C9.05 19.44 6 16.08 6 12C6 11.38 6.08 10.79 6.21 10.21L11 15V16C11 17.1 11.9 18 13 18V19.93ZM18.9 15.4C18.64 14.59 17.9 14 17 14H16V11C16 10.45 15.55 10 15 10H9V8H11C11.55 8 12 7.55 12 7V5H14C15.1 5 16 4.1 16 3V2.59C18.93 3.78 21 6.65 21 10C21 12.08 20.2 13.97 18.9 15.4Z" fill="currentColor"/>
+        <path d="M12 3C9 6 8.5 9.5 9 12C9.5 14.5 11 16.5 12 17C13.5 15.5 15.5 12 15.5 9.5C15.5 7 14.5 4.5 12 3Z" fill="#34D399" opacity="0.85"/>
+      </svg>
+    </div>
+    <div>
+      <h2 class="font-black text-slate-900 text-lg leading-tight">Employee Dashboard</h2>
+      <p class="text-[10px] text-emerald-700 font-bold uppercase tracking-widest">ESG profile & sustainability stats</p>
+    </div>
+  </div>
+
   <!-- Row 1: Profile + Attendance + XP -->
   <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
     <!-- Profile Card -->
@@ -1074,6 +1114,20 @@ function buildMgrDashboard() {
   const u = currentUser;
   const el = document.getElementById('page-mgr-dashboard');
   el.innerHTML = `
+  <!-- Header with logo -->
+  <div class="flex items-center gap-3 mb-6">
+    <div class="w-10 h-10 bg-[#0F3C2C] rounded-2xl flex items-center justify-center shadow-md">
+      <svg class="w-6 h-6 text-emerald-400" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2ZM13 19.93C9.05 19.44 6 16.08 6 12C6 11.38 6.08 10.79 6.21 10.21L11 15V16C11 17.1 11.9 18 13 18V19.93ZM18.9 15.4C18.64 14.59 17.9 14 17 14H16V11C16 10.45 15.55 10 15 10H9V8H11C11.55 8 12 7.55 12 7V5H14C15.1 5 16 4.1 16 3V2.59C18.93 3.78 21 6.65 21 10C21 12.08 20.2 13.97 18.9 15.4Z" fill="currentColor"/>
+        <path d="M12 3C9 6 8.5 9.5 9 12C9.5 14.5 11 16.5 12 17C13.5 15.5 15.5 12 15.5 9.5C15.5 7 14.5 4.5 12 3Z" fill="#34D399" opacity="0.85"/>
+      </svg>
+    </div>
+    <div>
+      <h2 class="font-black text-slate-900 text-lg leading-tight">Manager Dashboard</h2>
+      <p class="text-[10px] text-emerald-700 font-bold uppercase tracking-widest">Department overview & recommendations</p>
+    </div>
+  </div>
+
   <!-- KPIs -->
   <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
     ${kpiCard('fa-users','Total Employees',DEPT_EMPLOYEES.length,'IT Operations','text-slate-800')}
@@ -1274,11 +1328,11 @@ function saveNewTask() {
 
 function buildMgrTasks() {
   const el = document.getElementById('page-mgr-tasks');
-  const allTasks = [...TEAM_TASKS, ...EMP_TASKS.map(t => ({...t, team:'Green Ops Alpha'})) ];
+  const allTasks = [...TEAM_TASKS, ...EMP_TASKS.map(t => ({...t, team: t.team || 'Green Ops Alpha'})) ];
   const cols = [
-    { label:'📋 To Do', color:'bg-slate-100', tasks: allTasks.filter(t => t.progress === 0 || t.status === 'To Do') },
-    { label:'🔄 In Progress', color:'bg-blue-50', tasks: allTasks.filter(t => t.progress > 0 && t.progress < 100 && t.status !== 'To Do') },
-    { label:'✅ Done', color:'bg-emerald-50', tasks: allTasks.filter(t => t.progress === 100 || t.status === 'Done') },
+    { label:'📋 To Do', color:'bg-slate-100', tasks: allTasks.filter(t => t.status === 'To Do') },
+    { label:'🔄 In Progress', color:'bg-blue-50/50', tasks: allTasks.filter(t => t.status === 'In Progress') },
+    { label:'✅ Done', color:'bg-emerald-50', tasks: allTasks.filter(t => t.status === 'Done') },
   ];
   el.innerHTML = `
   <!-- Header with logo -->
@@ -1302,13 +1356,13 @@ function buildMgrTasks() {
   <!-- KPIs -->
   <div class="grid grid-cols-4 gap-4">
     ${kpiCard('fa-list','Total Tasks',allTasks.length,'All Teams','text-slate-800')}
-    ${kpiCard('fa-spinner','In Progress',allTasks.filter(t=>t.progress>0&&t.progress<100&&t.status!=='To Do').length,'Active','text-blue-600')}
-    ${kpiCard('fa-check-circle','Completed',allTasks.filter(t=>t.progress===100||t.status==='Done').length,'','text-emerald-600')}
+    ${kpiCard('fa-spinner','In Progress',allTasks.filter(t=>t.status==='In Progress').length,'Active','text-blue-600')}
+    ${kpiCard('fa-check-circle','Completed',allTasks.filter(t=>t.status==='Done').length,'','text-emerald-600')}
     ${kpiCard('fa-triangle-exclamation','Overdue',1,'Needs attention','text-red-600')}
   </div>
-  <!-- Kanban -->
-  <div class="grid grid-cols-3 gap-6">
-    ${cols.map(col=>`<div class="${col.color} p-4 rounded-2xl space-y-3 kanban-col">
+  <!-- Kanban (Horizontal Alignment) -->
+  <div class="flex flex-row gap-6 overflow-x-auto pb-4 items-start select-none">
+    ${cols.map(col=>`<div class="${col.color} p-4 rounded-2xl flex-1 min-w-[285px] space-y-3 kanban-col shadow-sm border border-slate-200/50">
       <h4 class="text-xs font-black text-slate-800 uppercase tracking-wider">${col.label} <span class="text-slate-400">(${col.tasks.length})</span></h4>
       ${col.tasks.map(t=>`<div class="bg-white p-3.5 rounded-xl border shadow-sm space-y-2 hover:-translate-y-0.5 transition-transform">
         <h5 class="font-bold text-xs text-slate-800">${t.name}</h5>
@@ -1381,6 +1435,7 @@ function buildMgrEvents() {
         </div>
         <div class="flex gap-2">
           <button onclick="approveEvent(${e.id}, this)" class="flex-1 bg-[#0F3C2C] text-white text-[10px] font-black py-2 rounded-xl hover:bg-[#09291D] transition-all">Approve</button>
+          <button onclick="showEventParticipants(${e.id})" class="flex-1 border border-slate-200 text-slate-600 text-[10px] font-black py-2 rounded-xl hover:bg-slate-50 transition-all">View Details</button>
           <label class="flex-1 border border-slate-200 text-slate-600 text-[10px] font-black py-2 rounded-xl hover:bg-slate-50 transition-all text-center cursor-pointer">
             <i class="fa fa-image mr-1"></i> Photo
             <input type="file" accept="image/*" class="hidden" onchange="updateEventPhoto(${e.id}, this)">
@@ -1389,6 +1444,49 @@ function buildMgrEvents() {
       </div>
     </div>`).join('')}
   </div>`;
+}
+
+function showEventParticipants(id) {
+  const e = CSR_EVENTS.find(x => x.id === id);
+  if (!e) return;
+  const list = EVENT_REGISTRATIONS[id] || [];
+  let m = document.getElementById('event-parts-modal');
+  if (m) m.remove();
+  m = document.createElement('div');
+  m.id = 'event-parts-modal';
+  m.className = 'fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4';
+  m.innerHTML = `
+  <div class="bg-white rounded-3xl max-w-md w-full shadow-2xl p-6 space-y-4">
+    <div class="flex items-center justify-between">
+      <div class="flex items-center gap-2">
+        <div class="w-8 h-8 bg-[#0F3C2C] rounded-xl flex items-center justify-center text-white"><i class="fa fa-users text-xs"></i></div>
+        <div>
+          <h3 class="font-black text-slate-800 text-base leading-tight">${e.name}</h3>
+          <p class="text-[10px] text-slate-400 font-semibold mt-0.5">Participating Workforce</p>
+        </div>
+      </div>
+      <button onclick="document.getElementById('event-parts-modal').remove()" class="text-slate-400 hover:text-slate-700 w-8 h-8 flex items-center justify-center rounded-xl hover:bg-slate-100"><i class="fa fa-times"></i></button>
+    </div>
+    <div class="space-y-2 max-h-60 overflow-y-auto">
+      ${list.map(p => `
+        <div class="flex items-center justify-between p-3 bg-slate-50 rounded-xl border">
+          <div class="flex items-center gap-2.5">
+            <img src="${p.avatar}" class="w-8 h-8 rounded-lg object-cover">
+            <div>
+              <p class="text-xs font-bold text-slate-800">${p.name}</p>
+              <p class="text-[9px] text-slate-400 font-semibold">${p.team}</p>
+            </div>
+          </div>
+          <span class="stat-chip bg-emerald-50 text-emerald-700 text-[9px] font-black">Registered</span>
+        </div>
+      `).join('')}
+      ${list.length === 0 ? `
+        <div class="text-center py-6 text-slate-400 font-semibold bg-slate-50 rounded-xl">No team members registered yet.</div>
+      ` : ''}
+    </div>
+    <button onclick="document.getElementById('event-parts-modal').remove()" class="w-full bg-[#0F3C2C] text-white font-bold text-xs py-2.5 rounded-xl hover:bg-[#09291D] transition-all">Close</button>
+  </div>`;
+  document.body.appendChild(m);
 }
 
 function updateEventPhoto(id, input) {
@@ -1521,11 +1619,12 @@ function buildMgrAnalytics() {
       <p class="text-[10px] text-emerald-700 font-bold uppercase tracking-widest">Team Performance & ESG Growth</p>
     </div>
   </div>
-  <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
     <div class="card p-6"><h4 class="text-xs font-black text-slate-800 uppercase tracking-wider mb-4">📊 ESG Score by Employee</h4><canvas id="mgr-esg-chart" height="180"></canvas></div>
     <div class="card p-6"><h4 class="text-xs font-black text-slate-800 uppercase tracking-wider mb-4">📅 Attendance Trend (6 Months)</h4><canvas id="mgr-att-chart" height="180"></canvas></div>
     <div class="card p-6"><h4 class="text-xs font-black text-slate-800 uppercase tracking-wider mb-4">✅ Task Completion Status</h4><canvas id="mgr-task-chart" height="180"></canvas></div>
     <div class="card p-6"><h4 class="text-xs font-black text-slate-800 uppercase tracking-wider mb-4">🌳 CSR Event Participation</h4><canvas id="mgr-csr-chart" height="180"></canvas></div>
+    <div class="card p-6"><h4 class="text-xs font-black text-slate-800 uppercase tracking-wider mb-4">🏆 Team Performance comparison</h4><canvas id="mgr-team-perf-chart" height="180"></canvas></div>
   </div>
   <!-- Team Growth Chart (full width) -->
   <div class="card p-6">
@@ -1557,6 +1656,7 @@ function buildMgrAnalytics() {
     new Chart(document.getElementById('mgr-att-chart'),{type:'line',data:{labels:['May','Jun','Jul','Aug','Sep','Oct'],datasets:[{label:'Avg Attendance %',data:[90,91,93,92,94,94.2],borderColor:'#0F3C2C',fill:true,backgroundColor:'rgba(15,60,44,0.07)',tension:.4}]},options:{plugins:{legend:{display:false}}}});
     new Chart(document.getElementById('mgr-task-chart'),{type:'doughnut',data:{labels:['Completed','In Progress','Overdue'],datasets:[{data:[1,3,0],backgroundColor:['#10b981','#3b82f6','#ef4444']}]},options:{plugins:{legend:{position:'bottom',labels:{font:{size:10}}}}}});
     new Chart(document.getElementById('mgr-csr-chart'),{type:'bar',data:{labels:DEPT_EMPLOYEES.map(e=>e.name.split(' ')[0]),datasets:[{label:'Events Joined',data:DEPT_EMPLOYEES.map(e=>e.events),backgroundColor:'#10b981'}]},options:{plugins:{legend:{display:false}}}});
+    new Chart(document.getElementById('mgr-team-perf-chart'),{type:'bar',data:{labels:['Green Ops Alpha','Green Ops Beta','Green Ops Gamma'],datasets:[{label:'Performance Index Score',data:[92,78,65],backgroundColor:['#0F3C2C','#3b82f6','#f59e0b']}]},options:{plugins:{legend:{display:false}},scales:{y:{min:0,max:100}}}});
     new Chart(document.getElementById('mgr-growth-chart'),{type:'line',data:{labels:['May','Jun','Jul','Aug','Sep','Oct'],datasets:[
       {label:'ESG Score',data:[74,76,79,81,84,88],borderColor:'#0F3C2C',backgroundColor:'rgba(15,60,44,0.08)',fill:true,tension:.4,borderWidth:2.5},
       {label:'XP (x100)',data:[95,108,120,132,148,168],borderColor:'#3b82f6',backgroundColor:'rgba(59,130,246,0.05)',fill:true,tension:.4,borderWidth:2.5},
@@ -1698,6 +1798,20 @@ function buildMgrTeams() {
 function buildAdmDashboard() {
   const el = document.getElementById('page-adm-dashboard');
   el.innerHTML = `
+  <!-- Header with logo -->
+  <div class="flex items-center gap-3 mb-6">
+    <div class="w-10 h-10 bg-[#0F3C2C] rounded-2xl flex items-center justify-center shadow-md">
+      <svg class="w-6 h-6 text-emerald-400" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2ZM13 19.93C9.05 19.44 6 16.08 6 12C6 11.38 6.08 10.79 6.21 10.21L11 15V16C11 17.1 11.9 18 13 18V19.93ZM18.9 15.4C18.64 14.59 17.9 14 17 14H16V11C16 10.45 15.55 10 15 10H9V8H11C11.55 8 12 7.55 12 7V5H14C15.1 5 16 4.1 16 3V2.59C18.93 3.78 21 6.65 21 10C21 12.08 20.2 13.97 18.9 15.4Z" fill="currentColor"/>
+        <path d="M12 3C9 6 8.5 9.5 9 12C9.5 14.5 11 16.5 12 17C13.5 15.5 15.5 12 15.5 9.5C15.5 7 14.5 4.5 12 3Z" fill="#34D399" opacity="0.85"/>
+      </svg>
+    </div>
+    <div>
+      <h2 class="font-black text-slate-900 text-lg leading-tight">Admin Command Center</h2>
+      <p class="text-[10px] text-emerald-700 font-bold uppercase tracking-widest">Global ESG Metrics & Organization Controls</p>
+    </div>
+  </div>
+
   <!-- KPIs Row -->
   <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
     ${kpiCard('fa-users','Total Employees',296,'Across all sectors','text-slate-800')}
@@ -2436,6 +2550,7 @@ function approveReward(empId, btn) {
   btn.className = 'bg-emerald-100 text-emerald-800 text-[10px] font-black px-2.5 py-1.5 rounded-lg cursor-not-allowed';
 }
 
+
 function openEventModal() {
   document.getElementById('event-modal').classList.remove('hidden');
 }
@@ -2455,14 +2570,22 @@ function saveNewEvent() {
     showToast('Please fill in Name, Date, and Venue!', 'error');
     return;
   }
+  
   CSR_EVENTS.unshift({
     id: CSR_EVENTS.length + 1,
     name, date, time, venue, participants, slots,
-    img: 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=400&fit=crop',
+    img: tempEventImg,
     type: 'custom'
   });
+  
+  // Initialize registration mapping for the new event
+  if (typeof EVENT_REGISTRATIONS !== 'undefined') EVENT_REGISTRATIONS[CSR_EVENTS.length] = [];
+  
   closeEventModal();
   showToast(`Event "${name}" created successfully!`, 'success');
+  
+  // Reset temp photo
+  tempEventImg = 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=400&fit=crop';
   buildPage('mgr-events');
 }
 
@@ -2555,6 +2678,10 @@ document.addEventListener('DOMContentLoaded', () => {
             <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Available Slots</label>
             <input id="modal-ev-slots" type="number" value="25" class="w-full border border-slate-200 rounded-xl px-3.5 py-2 text-xs focus:ring-1 focus:ring-[#0F3C2C] focus:outline-none">
           </div>
+        </div>
+        <div>
+          <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Event Photo</label>
+          <input id="modal-ev-photo" type="file" accept="image/*" class="w-full border border-slate-200 rounded-xl px-3.5 py-1.5 text-xs focus:outline-none" onchange="const reader=new FileReader(); reader.onload=function(e){tempEventImg=e.target.result;}; reader.readAsDataURL(this.files[0]);">
         </div>
       </div>
       <div class="flex gap-3 pt-2">

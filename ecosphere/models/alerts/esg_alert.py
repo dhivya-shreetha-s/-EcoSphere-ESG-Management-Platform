@@ -142,3 +142,57 @@ class EsgAlert(models.Model):
             'state': 'resolved',
             'resolved_at': fields.Datetime.now(),
         })
+
+    # ------------------------------------------------------------------ #
+    # Phase 3: Alert Triggering & AI enrichment                           #
+    # ------------------------------------------------------------------ #
+    @api.model
+    def check_score_thresholds(self, score):
+        """
+        Deterministic trigger checklist. Called after a score is computed.
+        If a metric has crossed a critical threshold, creates an alert record
+        and schedules AI narrative context.
+        """
+        breakdown = score.get_factor_breakdown()
+        if not breakdown or 'metrics' not in breakdown:
+            return
+
+        for m in breakdown['metrics']:
+            norm = m['normalized_score']
+            metric = self.env['esg.metric'].browse(m['id'])
+            
+            # If normalized score is critical (< 50)
+            if norm < 50.0:
+                # Determine scoping details
+                target_role = 'employee'
+                scope = 'self'
+                if score.scope == 'department':
+                    target_role = 'manager'
+                    scope = 'department'
+                elif score.scope in ('sector', 'org'):
+                    target_role = 'admin'
+                    scope = 'org'
+
+                # Create Alert deterministically (offline compatible!)
+                alert = self.create({
+                    'name': f"Critical Limit: {metric.name}",
+                    'message': f"Metric '{metric.name}' score dropped to {norm:.1f}/100. Action required.",
+                    'severity': 'critical' if norm < 30.0 else 'warning',
+                    'target_role': target_role,
+                    'scope': scope,
+                    'employee_id': score.employee_id.id if score.scope == 'employee' else False,
+                    'department_id': score.department_id.id if score.scope == 'department' else False,
+                    'metric_id': metric.id,
+                    'threshold_value': 50.0,
+                    'actual_value': m['raw_value'],
+                })
+
+                # Try to enrich with AI narrative
+                alert.action_enrich_alert_with_ai()
+
+    def action_enrich_alert_with_ai(self):
+        """Request Grok to write a 1-sentence mitigative context."""
+        for rec in self:
+            narrative = self.env['esg.ai.service'].get_alert_narrative(rec)
+            if narrative:
+                rec.write({'ai_narrative': narrative})

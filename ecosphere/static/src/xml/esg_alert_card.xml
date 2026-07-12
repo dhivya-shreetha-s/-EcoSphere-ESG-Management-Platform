@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<templates xml:space="preserve">
+    <t t-name="ecosphere.EsgAlertCard" owl="1">
+        <div t-att-class="'esg-alert-card border-start border-4 rounded p-3 mb-3 d-flex justify-content-between align-items-start shadow-sm ' + alertClass">
+            <div class="pe-3">
+                <div class="d-flex align-items-center mb-1">
+                    <span t-att-class="'badge rounded-pill me-2 px-2 py-1 text-uppercase fw-bold ' + severityBadgeClass" style="font-size: 0.7rem;" t-out="props.alert.severity"/>
+                    <h6 class="fw-bold m-0 text-slate-800" t-out="props.alert.name"/>
+                </div>
+                <p class="m-0 text-slate-600 mb-2" t-out="props.alert.message"/>
+                <div t-if="props.alert.ai_narrative" class="esg-alert-ai-narrative p-2 rounded bg-white-50 border border-light">
+                    <small class="text-indigo-700 italic"><i class="fa fa-magic me-1"/>Grok AI Context: <span t-out="props.alert.ai_narrative"/></small>
+                </div>
+            </div>
+            <div class="d-flex flex-column align-items-end justify-content-center">
+                <t t-if="props.alert.state == 'active'">
+                    <button class="btn btn-sm btn-secondary mb-1 w-100" t-on-click="actionAcknowledge"><i class="fa fa-eye me-1"/>Ack</button>
+                </t>
+                <t t-if="props.alert.state != 'resolved'">
+                    <button class="btn btn-sm btn-primary w-100" t-on-click="actionResolve"><i class="fa fa-check me-1"/>Resolve</button>
+                </t>
+            </div>
+        </div>
+    </t>
+</templates>

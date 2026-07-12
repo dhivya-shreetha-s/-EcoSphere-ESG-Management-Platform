@@ -55,3 +55,5 @@ access_esg_goal_manager,esg.goal manager rw,model_esg_goal,ecosphere.group_esg_m
 access_esg_goal_admin,esg.goal admin full,model_esg_goal,ecosphere.group_esg_admin,1,1,1,1
 # ── esg.ai.log ────────────────────────────────────────────────────────────
 access_esg_ai_log_admin,esg.ai.log admin read,model_esg_ai_log,ecosphere.group_esg_admin,1,0,0,0
+# ── esg.seed.helper ───────────────────────────────────────────────────────
+access_esg_seed_helper_admin,esg.seed.helper admin full,model_esg_seed_helper,ecosphere.group_esg_admin,1,1,1,1

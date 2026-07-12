@@ -1,0 +1,57 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+# ── esg.sector ────────────────────────────────────────────────────────────
+access_esg_sector_employee,esg.sector employee read,model_esg_sector,ecosphere.group_esg_employee,1,0,0,0
+access_esg_sector_manager,esg.sector manager read,model_esg_sector,ecosphere.group_esg_manager,1,0,0,0
+access_esg_sector_admin,esg.sector admin full,model_esg_sector,ecosphere.group_esg_admin,1,1,1,1
+# ── esg.category ──────────────────────────────────────────────────────────
+access_esg_category_employee,esg.category employee read,model_esg_category,ecosphere.group_esg_employee,1,0,0,0
+access_esg_category_manager,esg.category manager read,model_esg_category,ecosphere.group_esg_manager,1,0,0,0
+access_esg_category_admin,esg.category admin full,model_esg_category,ecosphere.group_esg_admin,1,1,1,1
+# ── esg.metric ────────────────────────────────────────────────────────────
+access_esg_metric_employee,esg.metric employee read,model_esg_metric,ecosphere.group_esg_employee,1,0,0,0
+access_esg_metric_manager,esg.metric manager read,model_esg_metric,ecosphere.group_esg_manager,1,0,0,0
+access_esg_metric_admin,esg.metric admin full,model_esg_metric,ecosphere.group_esg_admin,1,1,1,1
+# ── esg.data.source ───────────────────────────────────────────────────────
+access_esg_data_source_employee,esg.data.source employee read,model_esg_data_source,ecosphere.group_esg_employee,1,0,0,0
+access_esg_data_source_admin,esg.data.source admin full,model_esg_data_source,ecosphere.group_esg_admin,1,1,1,1
+# ── esg.score ─────────────────────────────────────────────────────────────
+access_esg_score_employee,esg.score employee read,model_esg_score,ecosphere.group_esg_employee,1,0,0,0
+access_esg_score_manager,esg.score manager rw,model_esg_score,ecosphere.group_esg_manager,1,1,1,0
+access_esg_score_admin,esg.score admin full,model_esg_score,ecosphere.group_esg_admin,1,1,1,1
+# ── esg.alert ─────────────────────────────────────────────────────────────
+access_esg_alert_employee,esg.alert employee read,model_esg_alert,ecosphere.group_esg_employee,1,0,0,0
+access_esg_alert_manager,esg.alert manager rw,model_esg_alert,ecosphere.group_esg_manager,1,1,0,0
+access_esg_alert_admin,esg.alert admin full,model_esg_alert,ecosphere.group_esg_admin,1,1,1,1
+# ── esg.recommendation ────────────────────────────────────────────────────
+access_esg_recommendation_employee,esg.recommendation employee rw,model_esg_recommendation,ecosphere.group_esg_employee,1,1,0,0
+access_esg_recommendation_manager,esg.recommendation manager rw,model_esg_recommendation,ecosphere.group_esg_manager,1,1,1,0
+access_esg_recommendation_admin,esg.recommendation admin full,model_esg_recommendation,ecosphere.group_esg_admin,1,1,1,1
+# ── esg.csr.event ─────────────────────────────────────────────────────────
+access_esg_csr_event_employee,esg.csr.event employee read,model_esg_csr_event,ecosphere.group_esg_employee,1,0,0,0
+access_esg_csr_event_manager,esg.csr.event manager full,model_esg_csr_event,ecosphere.group_esg_manager,1,1,1,0
+access_esg_csr_event_admin,esg.csr.event admin full,model_esg_csr_event,ecosphere.group_esg_admin,1,1,1,1
+# ── esg.csr.event.registration ────────────────────────────────────────────
+access_esg_csr_event_reg_employee,esg.csr.event.registration employee rw,model_esg_csr_event_registration,ecosphere.group_esg_employee,1,1,1,0
+access_esg_csr_event_reg_manager,esg.csr.event.registration manager full,model_esg_csr_event_registration,ecosphere.group_esg_manager,1,1,1,1
+access_esg_csr_event_reg_admin,esg.csr.event.registration admin full,model_esg_csr_event_registration,ecosphere.group_esg_admin,1,1,1,1
+# ── esg.challenge ─────────────────────────────────────────────────────────
+access_esg_challenge_employee,esg.challenge employee read,model_esg_challenge,ecosphere.group_esg_employee,1,0,0,0
+access_esg_challenge_manager,esg.challenge manager read,model_esg_challenge,ecosphere.group_esg_manager,1,0,0,0
+access_esg_challenge_admin,esg.challenge admin full,model_esg_challenge,ecosphere.group_esg_admin,1,1,1,1
+# ── esg.badge ─────────────────────────────────────────────────────────────
+access_esg_badge_employee,esg.badge employee read,model_esg_badge,ecosphere.group_esg_employee,1,0,0,0
+access_esg_badge_admin,esg.badge admin full,model_esg_badge,ecosphere.group_esg_admin,1,1,1,1
+# ── esg.reward ────────────────────────────────────────────────────────────
+access_esg_reward_employee,esg.reward employee read,model_esg_reward,ecosphere.group_esg_employee,1,0,0,0
+access_esg_reward_manager,esg.reward manager read,model_esg_reward,ecosphere.group_esg_manager,1,0,0,0
+access_esg_reward_admin,esg.reward admin full,model_esg_reward,ecosphere.group_esg_admin,1,1,1,1
+# ── esg.xp.ledger ─────────────────────────────────────────────────────────
+access_esg_xp_ledger_employee,esg.xp.ledger employee read,model_esg_xp_ledger,ecosphere.group_esg_employee,1,0,0,0
+access_esg_xp_ledger_manager,esg.xp.ledger manager rc,model_esg_xp_ledger,ecosphere.group_esg_manager,1,0,1,0
+access_esg_xp_ledger_admin,esg.xp.ledger admin full,model_esg_xp_ledger,ecosphere.group_esg_admin,1,1,1,1
+# ── esg.goal ──────────────────────────────────────────────────────────────
+access_esg_goal_employee,esg.goal employee rw,model_esg_goal,ecosphere.group_esg_employee,1,1,1,0
+access_esg_goal_manager,esg.goal manager rw,model_esg_goal,ecosphere.group_esg_manager,1,1,1,0
+access_esg_goal_admin,esg.goal admin full,model_esg_goal,ecosphere.group_esg_admin,1,1,1,1
+# ── esg.ai.log ────────────────────────────────────────────────────────────
+access_esg_ai_log_admin,esg.ai.log admin read,model_esg_ai_log,ecosphere.group_esg_admin,1,0,0,0

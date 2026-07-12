@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <!-- ── esg.alert list view ────────────────────────────────── -->
+        <record id="view_esg_alert_list" model="ir.ui.view">
+            <field name="name">esg.alert.list</field>
+            <field name="model">esg.alert</field>
+            <field name="arch" type="xml">
+                <list string="ESG Alerts" default_order="create_date desc"
+                      decoration-danger="severity == 'critical'"
+                      decoration-warning="severity == 'warning'"
+                      decoration-muted="state == 'resolved'">
+                    <field name="name"/>
+                    <field name="severity"/>
+                    <field name="target_role"/>
+                    <field name="scope"/>
+                    <field name="employee_id" optional="show"/>
+                    <field name="department_id" optional="show"/>
+                    <field name="metric_id" optional="hide"/>
+                    <field name="actual_value" optional="hide"/>
+                    <field name="threshold_value" optional="hide"/>
+                    <field name="state"/>
+                    <field name="create_date" string="Triggered"/>
+                    <button name="action_acknowledge" type="object"
+                            string="Acknowledge"
+                            attrs="{'invisible': [('state', '!=', 'active')]}"
+                            class="btn-sm btn-secondary"/>
+                    <button name="action_resolve" type="object"
+                            string="Resolve"
+                            attrs="{'invisible': [('state', '=', 'resolved')]}"
+                            class="btn-sm btn-primary"/>
+                </list>
+            </field>
+        </record>
+
+        <!-- ── esg.alert form view ────────────────────────────────── -->
+        <record id="view_esg_alert_form" model="ir.ui.view">
+            <field name="name">esg.alert.form</field>
+            <field name="model">esg.alert</field>
+            <field name="arch" type="xml">
+                <form string="ESG Alert">
+                    <header>
+                        <button name="action_acknowledge" type="object"
+                                string="Acknowledge"
+                                attrs="{'invisible': [('state', '!=', 'active')]}"
+                                class="btn-secondary"/>
+                        <button name="action_resolve" type="object"
+                                string="Mark Resolved"
+                                attrs="{'invisible': [('state', '=', 'resolved')]}"
+                                class="btn-primary"/>
+                        <field name="state" widget="statusbar"
+                               statusbar_visible="active,acknowledged,resolved"/>
+                    </header>
+                    <sheet>
+                        <group string="Alert Details">
+                            <group>
+                                <field name="name"/>
+                                <field name="severity"/>
+                                <field name="target_role"/>
+                                <field name="scope"/>
+                            </group>
+                            <group>
+                                <field name="employee_id"
+                                       attrs="{'invisible': [('scope', '!=', 'self')]}"/>
+                                <field name="department_id"
+                                       attrs="{'invisible': [('scope', 'not in', ['department'])]}"/>
+                                <field name="metric_id"/>
+                                <field name="threshold_value"/>
+                                <field name="actual_value"/>
+                                <field name="resolved_at" readonly="1"/>
+                            </group>
+                        </group>
+                        <group string="Message">
+                            <field name="message" nolabel="1"/>
+                        </group>
+                        <group string="AI Narrative (Phase 3)"
+                               attrs="{'invisible': [('ai_narrative', '=', False)]}">
+                            <field name="ai_narrative" nolabel="1" readonly="1"/>
+                        </group>
+                    </sheet>
+                    <div class="oe_chatter">
+                        <field name="message_follower_ids"/>
+                        <field name="activity_ids"/>
+                        <field name="message_ids"/>
+                    </div>
+                </form>
+            </field>
+        </record>
+
+        <!-- ── Window action ─────────────────────────────────────── -->
+        <record id="action_esg_alert_list" model="ir.actions.act_window">
+            <field name="name">ESG Alerts</field>
+            <field name="res_model">esg.alert</field>
+            <field name="view_mode">list,form</field>
+            <field name="context">{'search_default_active': 1}</field>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">
+                    No active alerts. The alert engine runs automatically when
+                    the scoring engine detects threshold breaches.
+                </p>
+            </field>
+        </record>
+
+    </data>
+</odoo>

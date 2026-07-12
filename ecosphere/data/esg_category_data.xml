@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <!--
+        Seed the three ESG categories: Environmental, Social, Governance.
+        noupdate="1": these records are only created on first install and
+        are not overwritten on module upgrade, preserving any admin weight adjustments.
+        -->
+
+        <record id="esg_category_environmental" model="esg.category">
+            <field name="name">Environmental</field>
+            <field name="code">E</field>
+            <field name="weight">33.33</field>
+            <field name="color">10</field>   <!-- green -->
+            <field name="sequence">1</field>
+            <field name="description">
+                Tracks environmental impact: carbon emissions, energy consumption,
+                water usage, waste generation, recycling rates, and fleet efficiency.
+                Sourced from Fleet, Accounting, and Inventory modules where installed.
+            </field>
+        </record>
+
+        <record id="esg_category_social" model="esg.category">
+            <field name="name">Social</field>
+            <field name="code">S</field>
+            <field name="weight">33.33</field>
+            <field name="color">4</field>   <!-- blue -->
+            <field name="sequence">2</field>
+            <field name="description">
+                Tracks social responsibility: employee attendance, leave utilization,
+                CSR event participation, volunteer hours, diversity metrics (aggregated),
+                and training completion. Sourced from HR Attendance, Leave, and EcoSphere CSR events.
+            </field>
+        </record>
+
+        <record id="esg_category_governance" model="esg.category">
+            <field name="name">Governance</field>
+            <field name="code">G</field>
+            <field name="weight">33.34</field>
+            <field name="color">1</field>   <!-- yellow -->
+            <field name="sequence">3</field>
+            <field name="description">
+                Tracks governance quality: policy compliance, audit completion rates,
+                approval workflow adherence, risk score, and data integrity.
+                Sourced from EcoSphere compliance events and Accounting records.
+            </field>
+        </record>
+
+    </data>
+</odoo>

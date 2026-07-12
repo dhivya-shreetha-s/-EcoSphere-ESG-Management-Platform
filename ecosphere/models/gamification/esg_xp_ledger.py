@@ -22,6 +22,7 @@ class EsgXpLedger(models.Model):
     delta_xp = fields.Integer(
         string='XP Delta',
         required=True,
+        index=True,
         help='Positive = XP earned. Negative = XP reversal.',
     )
     reason = fields.Selection(

@@ -2,8 +2,9 @@
 """
 esg.score — The central output record of the EcoSphere scoring engine.
 
-Contains the real-time weighted scoring engine calculation math and the
-hierarchical rollup logic.
+Contains the real-time weighted scoring engine calculation math, the
+hierarchical rollup logic, and triggers for deterministic alerts and Grok-powered
+narrative / recommendations.
 """
 import json
 from odoo import api, fields, models
@@ -171,6 +172,8 @@ class EsgScore(models.Model):
         4. Rolls up category sub-scores.
         5. Computes composite score and suggested bonus.
         6. Writes explainability details to factor_breakdown.
+        7. Triggers alert threshold check (deterministic).
+        8. Triggers Grok AI narrative & recommendation authoring (non-blocking).
         """
         self.ensure_one()
         categories = self.env['esg.category'].search([])
@@ -255,7 +258,6 @@ class EsgScore(models.Model):
             metric_weight = item['weight_within_category']
             total_metric_weight = category_total_weights[cat_code] or 1.0
             
-            # contribution = (normalized_score * metric_weight / total_metric_weight) * (cat_weight / 100)
             contribution = (item['normalized_score'] * metric_weight / total_metric_weight) * (cat_weight / 100.0)
             item['contribution_to_overall'] = round(contribution, 2)
 
@@ -273,6 +275,31 @@ class EsgScore(models.Model):
             'factor_breakdown': json.dumps(breakdown_data, indent=2),
             'computed_at': fields.Datetime.now(),
         })
+
+        # ── Trigger Alerts Checklist ──────────────────────────────
+        self.env['esg.alert'].check_score_thresholds(self)
+
+        # ── Trigger AI Narrative & Recommendations ──────────────────
+        ai_service = self.env['esg.ai.service']
+        explanation_text = ai_service.get_score_explanation(self)
+        self.write({'explanation': explanation_text})
+
+        # Generate Action Items for Employee and Department scopes
+        if self.scope in ('employee', 'department'):
+            recs_data = ai_service.get_score_recommendations(self)
+            for rec in recs_data:
+                # Create recommendation action item record
+                self.env['esg.recommendation'].create({
+                    'title': rec['title'],
+                    'description': rec['description'],
+                    'priority': rec['priority'],
+                    'xp_reward': rec['xp_reward'],
+                    'scope': self.scope,
+                    'employee_id': self.employee_id.id if self.scope == 'employee' else False,
+                    'department_id': self.department_id.id if self.scope == 'department' else False,
+                    'score_id': self.id,
+                    'is_ai_generated': True,
+                })
 
     def _normalize_value(self, metric, raw_value):
         """Normalize raw value to 0-100 scale using bounds and direction."""

@@ -1,0 +1,1628 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EcoSphere — AI Powered ESG Management Platform</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+  * { font-family: 'Inter', sans-serif; }
+  body { background: #F4F6F9; }
+  ::-webkit-scrollbar { width: 5px; height: 5px; }
+  ::-webkit-scrollbar-track { background: #f1f5f9; }
+  ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+  .sidebar-link { transition: all 0.2s; }
+  .sidebar-link.active { background: #0F3C2C; color: white; }
+  .sidebar-link:not(.active):hover { background: #F0FDF4; color: #0F3C2C; }
+  .card { background: white; border-radius: 16px; border: 1px solid #F1F5F9; }
+  .badge-e { background:#DCFCE7; color:#166534; }
+  .badge-s { background:#DBEAFE; color:#1d4ed8; }
+  .badge-g { background:#FEF9C3; color:#854d0e; }
+  .ring-wrap { position:relative; width:90px; height:90px; display:flex; align-items:center; justify-content:center; }
+  .ring-wrap::before { content:''; position:absolute; width:74px; height:74px; border-radius:50%; background:white; }
+  .ring-inner { position:relative; font-weight:800; font-size:14px; color:#1e293b; }
+  .page { display:none; }
+  .page.active { display:block; }
+  .progress { height:6px; border-radius:999px; background:#f1f5f9; overflow:hidden; }
+  .progress-fill { height:100%; border-radius:999px; transition: width .6s cubic-bezier(.4,0,.2,1); }
+  .kanban-col { min-height:200px; }
+  .event-card img { height:130px; object-fit:cover; }
+  .stat-chip { padding:2px 8px; border-radius:999px; font-size:10px; font-weight:700; }
+  @keyframes fadeIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+  .fade-in { animation: fadeIn .3s ease; }
+  .leaderboard-row:hover { background:#F8FAFC; }
+  .alert-critical { border-left:4px solid #EF4444; }
+  .alert-warning  { border-left:4px solid #F59E0B; }
+  .alert-info     { border-left:4px solid #3B82F6; }
+  .alert-success  { border-left:4px solid #10B981; }
+</style>
+</head>
+<body class="min-h-screen">
+
+<!-- ===================== LOGIN PAGE ===================== -->
+<div id="login-page" class="min-h-screen flex items-center justify-center p-6"
+     style="background:linear-gradient(135deg,#0a2619 0%,#0F3C2C 50%,#1a5c40 100%)">
+  <div class="w-full max-w-md">
+    <!-- Brand -->
+    <div class="text-center mb-8">
+      <div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-white/10 mb-4 border border-white/20">
+        <i class="fa fa-globe text-3xl text-white"></i>
+      </div>
+      <h1 class="text-3xl font-black text-white">EcoSphere</h1>
+      <p class="text-emerald-300 font-semibold text-sm mt-1">AI Powered ESG Management Platform</p>
+    </div>
+
+    <!-- Login Card -->
+    <div class="bg-white rounded-3xl shadow-2xl p-8 space-y-6">
+      <h2 class="text-xl font-bold text-slate-800">Sign In to Your Dashboard</h2>
+
+      <!-- Demo Credentials Cards -->
+      <div class="space-y-2">
+        <p class="text-xs font-bold text-slate-400 uppercase tracking-widest">Demo Credentials — Click to Auto-Fill</p>
+        <div class="grid grid-cols-3 gap-2">
+          <button onclick="autofill('emp')" class="p-2.5 rounded-xl border-2 border-slate-100 hover:border-emerald-500 hover:bg-emerald-50 text-center transition-all group">
+            <i class="fa fa-user text-lg text-slate-400 group-hover:text-emerald-600 block mb-1"></i>
+            <span class="text-[10px] font-black text-slate-500 group-hover:text-emerald-700 block">Employee</span>
+          </button>
+          <button onclick="autofill('mgr')" class="p-2.5 rounded-xl border-2 border-slate-100 hover:border-blue-500 hover:bg-blue-50 text-center transition-all group">
+            <i class="fa fa-briefcase text-lg text-slate-400 group-hover:text-blue-600 block mb-1"></i>
+            <span class="text-[10px] font-black text-slate-500 group-hover:text-blue-700 block">Manager</span>
+          </button>
+          <button onclick="autofill('adm')" class="p-2.5 rounded-xl border-2 border-slate-100 hover:border-amber-500 hover:bg-amber-50 text-center transition-all group">
+            <i class="fa fa-crown text-lg text-slate-400 group-hover:text-amber-600 block mb-1"></i>
+            <span class="text-[10px] font-black text-slate-500 group-hover:text-amber-700 block">Admin</span>
+          </button>
+        </div>
+        <div class="bg-slate-50 rounded-xl p-3 space-y-1 text-[10px] font-semibold text-slate-500">
+          <div class="flex justify-between"><span>👨‍💻 Employee:</span><code class="text-emerald-700">elena@ecosphere.com / EcoSphereEmp!</code></div>
+          <div class="flex justify-between"><span>👨‍💼 Manager:</span><code class="text-blue-700">david@ecosphere.com / EcoSphereMgr!</code></div>
+          <div class="flex justify-between"><span>👑 Admin:</span><code class="text-amber-700">admin@ecosphere.com / EcoSphereAdm!</code></div>
+        </div>
+      </div>
+
+      <!-- Form Fields -->
+      <div class="space-y-4">
+        <div>
+          <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Email Address</label>
+          <input id="login-email" type="email" placeholder="name@ecosphere.com"
+            class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#0F3C2C] transition-all">
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Password</label>
+          <input id="login-pass" type="password" placeholder="••••••••"
+            class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#0F3C2C] transition-all">
+        </div>
+        <div id="login-error" class="hidden text-xs text-red-500 font-semibold text-center p-2 bg-red-50 rounded-lg border border-red-100">
+          <i class="fa fa-circle-xmark mr-1"></i> Invalid credentials. Please try again.
+        </div>
+        <button onclick="attemptLogin()"
+          class="w-full bg-[#0F3C2C] hover:bg-[#09291D] text-white font-bold py-3.5 rounded-xl shadow-lg transition-all text-sm">
+          Sign In <i class="fa fa-arrow-right ml-1"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== APP SHELL ===================== -->
+<div id="app-shell" class="hidden min-h-screen flex">
+
+  <!-- SIDEBAR -->
+  <aside class="w-64 bg-white border-r border-slate-100 flex flex-col shrink-0 h-screen sticky top-0 overflow-y-auto">
+    <!-- Brand -->
+    <div class="px-6 py-5 border-b border-slate-50 shrink-0">
+      <div class="flex items-center gap-2.5">
+        <div class="bg-[#0F3C2C] text-white p-2 rounded-xl"><i class="fa fa-globe text-base"></i></div>
+        <div>
+          <h2 class="font-black text-slate-900 text-base leading-none">EcoSphere</h2>
+          <span class="text-[9px] text-slate-400 font-bold uppercase tracking-widest">ESG Management</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- User Profile Mini -->
+    <div class="px-4 py-4 border-b border-slate-50 shrink-0">
+      <div class="flex items-center gap-3">
+        <img id="sb-avatar" src="" class="w-9 h-9 rounded-xl object-cover">
+        <div class="flex-1 min-w-0">
+          <h4 id="sb-name" class="text-xs font-bold text-slate-800 truncate"></h4>
+          <span id="sb-role-badge" class="text-[9px] font-black px-2 py-0.5 rounded-full"></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Nav Links (dynamic) -->
+    <nav id="sidebar-nav" class="flex-1 px-3 py-4 space-y-1 overflow-y-auto"></nav>
+
+    <!-- AI Assistant Banner -->
+    <div class="p-4 shrink-0">
+      <div class="bg-[#0F3C2C] text-white p-4 rounded-2xl space-y-2">
+        <span class="text-[9px] font-black bg-white/10 px-2 py-0.5 rounded-full uppercase tracking-widest"><i class="fa fa-magic mr-1"></i> AI ESG Assistant</span>
+        <p class="text-[10px] text-emerald-200 leading-relaxed">Ask AI about sustainability, tasks, and ESG improvements.</p>
+        <button onclick="openChat()" class="w-full bg-white text-[#0F3C2C] text-[10px] font-black py-2 rounded-lg hover:bg-emerald-50 transition-all">LAUNCH AI CORE</button>
+      </div>
+      <div class="pt-3 space-y-1">
+        <a href="#" class="flex items-center gap-2.5 px-3 py-2 text-xs text-slate-400 hover:text-slate-700 font-semibold rounded-lg hover:bg-slate-50 transition-all"><i class="fa fa-circle-question"></i> Help Center</a>
+        <button onclick="logout()" class="w-full flex items-center gap-2.5 px-3 py-2 text-xs text-red-500 hover:text-red-700 font-bold rounded-lg hover:bg-red-50 transition-all"><i class="fa fa-arrow-right-from-bracket"></i> Sign Out</button>
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN CONTENT -->
+  <div class="flex-1 flex flex-col min-w-0">
+
+    <!-- TOP BAR -->
+    <header class="bg-white border-b border-slate-100 px-8 py-3.5 flex items-center justify-between shrink-0 sticky top-0 z-20">
+      <div class="flex items-center gap-4">
+        <div class="relative">
+          <i class="fa fa-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+          <input type="text" placeholder="Search tasks, metrics, employees..." class="bg-slate-50 border border-slate-200 rounded-xl pl-9 pr-4 py-2 text-xs w-72 focus:outline-none focus:ring-1 focus:ring-[#0F3C2C]">
+        </div>
+        <div id="breadcrumb" class="text-xs font-semibold text-slate-400"></div>
+      </div>
+      <div class="flex items-center gap-4">
+        <!-- Notification Bell -->
+        <button onclick="toggleNotifs()" class="relative text-slate-400 hover:text-slate-700">
+          <i class="fa fa-bell text-lg"></i>
+          <span id="notif-dot" class="absolute -top-0.5 -right-0.5 w-2 h-2 bg-red-500 rounded-full border border-white"></span>
+        </button>
+        <!-- Notification Dropdown -->
+        <div id="notif-panel" class="hidden absolute top-14 right-24 w-80 bg-white border border-slate-100 rounded-2xl shadow-2xl z-50 overflow-hidden">
+          <div class="px-4 py-3 border-b border-slate-100 flex justify-between items-center">
+            <h4 class="text-xs font-black text-slate-800 uppercase tracking-wider">Notifications</h4>
+            <span class="text-[10px] font-bold text-emerald-600 cursor-pointer">Mark all read</span>
+          </div>
+          <div id="notif-list" class="max-h-72 overflow-y-auto divide-y divide-slate-50"></div>
+        </div>
+        <!-- Profile -->
+        <div class="flex items-center gap-2.5 pl-4 border-l border-slate-100">
+          <img id="hdr-avatar" src="" class="w-8 h-8 rounded-xl object-cover">
+          <div>
+            <h4 id="hdr-name" class="text-xs font-bold text-slate-800 leading-tight"></h4>
+            <small id="hdr-dept" class="text-[10px] text-slate-400 font-semibold block"></small>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- PAGES VIEWPORT -->
+    <div class="flex-1 overflow-y-auto p-8 space-y-6">
+
+      <!-- ========== EMPLOYEE PAGES ========== -->
+      <div id="page-emp-dashboard" class="page fade-in space-y-6"></div>
+      <div id="page-emp-tasks" class="page fade-in space-y-6"></div>
+      <div id="page-emp-esg" class="page fade-in space-y-6"></div>
+      <div id="page-emp-events" class="page fade-in space-y-6"></div>
+      <div id="page-emp-rewards" class="page fade-in space-y-6"></div>
+      <div id="page-emp-policies" class="page fade-in space-y-6"></div>
+
+      <!-- ========== MANAGER PAGES ========== -->
+      <div id="page-mgr-dashboard" class="page fade-in space-y-6"></div>
+      <div id="page-mgr-employees" class="page fade-in space-y-6"></div>
+      <div id="page-mgr-tasks" class="page fade-in space-y-6"></div>
+      <div id="page-mgr-events" class="page fade-in space-y-6"></div>
+      <div id="page-mgr-rewards" class="page fade-in space-y-6"></div>
+      <div id="page-mgr-analytics" class="page fade-in space-y-6"></div>
+
+      <!-- ========== ADMIN PAGES ========== -->
+      <div id="page-adm-dashboard" class="page fade-in space-y-6"></div>
+      <div id="page-adm-sectors" class="page fade-in space-y-6"></div>
+      <div id="page-adm-employees" class="page fade-in space-y-6"></div>
+      <div id="page-adm-analytics" class="page fade-in space-y-6"></div>
+      <div id="page-adm-alerts" class="page fade-in space-y-6"></div>
+      <div id="page-adm-leaderboard" class="page fade-in space-y-6"></div>
+      <div id="page-adm-reports" class="page fade-in space-y-6"></div>
+      <div id="page-adm-settings" class="page fade-in space-y-6"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== FLOATING AI CHAT ===================== -->
+<div id="chat-fab" class="hidden fixed bottom-6 right-6 z-50">
+  <button onclick="openChat()" class="bg-[#0F3C2C] hover:bg-[#09291D] text-white w-14 h-14 rounded-full shadow-2xl flex items-center justify-center hover:scale-110 transition-all border-2 border-white/20">
+    <i class="fa fa-magic text-xl"></i>
+  </button>
+</div>
+
+<div id="chat-window" class="hidden fixed bottom-24 right-6 z-50 w-[360px] h-[520px] bg-white rounded-2xl shadow-2xl border border-slate-100 flex flex-col overflow-hidden">
+  <div class="bg-[#0F3C2C] text-white px-4 py-3.5 flex items-center justify-between shrink-0">
+    <div class="flex items-center gap-2">
+      <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
+      <div>
+        <h4 class="font-bold text-sm leading-none">AI ESG Assistant</h4>
+        <small class="text-[10px] text-emerald-300">Powered by Groq · llama-3.1-8b</small>
+      </div>
+    </div>
+    <button onclick="closeChat()" class="text-white/70 hover:text-white"><i class="fa fa-times text-sm"></i></button>
+  </div>
+  <div id="chat-msgs" class="flex-1 p-4 overflow-y-auto space-y-3 bg-slate-50 text-xs">
+    <div class="flex">
+      <div class="bg-white p-3 rounded-2xl max-w-[85%] border shadow-sm text-slate-700 leading-relaxed">
+        Hello! I'm your EcoSphere AI Advisor 🌱. Ask me anything about sustainability, ESG scores, or company insights!
+      </div>
+    </div>
+    <div class="space-y-1.5 pt-1">
+      <p class="text-[9px] font-black uppercase text-slate-400 tracking-widest">Quick Suggestions</p>
+      <button onclick="chatSuggest('How can I improve my ESG score?')" class="w-full text-left bg-white border p-2.5 rounded-xl text-slate-600 hover:border-emerald-400 hover:bg-emerald-50 transition-all shadow-sm">💡 How can I improve my ESG score?</button>
+      <button onclick="chatSuggest('Which CSR event should I join?')" class="w-full text-left bg-white border p-2.5 rounded-xl text-slate-600 hover:border-emerald-400 hover:bg-emerald-50 transition-all shadow-sm">🌳 Which CSR event should I join?</button>
+      <button onclick="chatSuggest('What departments have high carbon emissions?')" class="w-full text-left bg-white border p-2.5 rounded-xl text-slate-600 hover:border-emerald-400 hover:bg-emerald-50 transition-all shadow-sm">🏭 Departments with high carbon emissions?</button>
+    </div>
+  </div>
+  <div id="chat-loader" class="hidden px-4 py-2 bg-white border-t text-[10px] text-slate-400 flex items-center gap-2">
+    <i class="fa fa-spinner fa-spin"></i> AI is thinking...
+  </div>
+  <div class="p-3 border-t bg-white flex gap-2 shrink-0">
+    <input id="chat-input" type="text" placeholder="Ask AI anything..." class="flex-1 border border-slate-200 rounded-xl px-3 py-2 text-xs focus:outline-none focus:ring-1 focus:ring-[#0F3C2C]" onkeydown="if(event.key==='Enter')sendChat()">
+    <button onclick="sendChat()" class="bg-[#0F3C2C] text-white px-3 rounded-xl hover:bg-[#09291D] transition-all"><i class="fa fa-paper-plane text-xs"></i></button>
+  </div>
+</div>
+
+<script>
+// =========================================================
+// DATA
+// =========================================================
+const USERS = {
+  emp: { email:'elena@ecosphere.com', pass:'EcoSphereEmp!', role:'employee',
+    name:'Elena Rodriguez', title:'SR. PROJECT LEAD', dept:'IT Operations',
+    avatar:'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=100&h=100&fit=crop&crop=face',
+    empId:'ECO-8829', age:28, gender:'Female', sector:'Information Technology',
+    team:'Green Ops Alpha', manager:'David Chen', joined:'March 12, 2022', status:'Active',
+    xp:12450, rank:3, badges:['🌱 Eco Starter','🏅 Carbon Saver','🔥 Streak Master'],
+    scores:{ overall:82, env:80, social:65, gov:95 }
+  },
+  mgr: { email:'david@ecosphere.com', pass:'EcoSphereMgr!', role:'manager',
+    name:'David Chen', title:'DEPARTMENT MANAGER', dept:'IT Operations',
+    avatar:'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop&crop=face',
+    empId:'ECO-0142', age:36, gender:'Male', sector:'Information Technology',
+    team:'Green Ops Alpha', manager:'Sarah Li (Director)', joined:'Jan 5, 2019', status:'Active',
+    xp:19800, rank:1, badges:['👑 Dept Champion','🌍 ESG Leader','⭐ Top Performer'],
+    scores:{ overall:88, env:85, social:78, gov:92 }
+  },
+  adm: { email:'admin@ecosphere.com', pass:'EcoSphereAdm!', role:'admin',
+    name:'Sarah Li', title:'EXECUTIVE DIRECTOR', dept:'Global HQ',
+    avatar:'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100&h=100&fit=crop&crop=face',
+    empId:'ECO-0001', age:44, gender:'Female', sector:'Executive',
+    team:'Executive', manager:'—', joined:'Sep 1, 2015', status:'Active',
+    xp:38500, rank:1, badges:['👑 Org Champion','🌍 ESG Visionary','🏆 All-Star Leader'],
+    scores:{ overall:91, env:88, social:90, gov:96 }
+  }
+};
+
+const EMP_TASKS = [
+  { name:'ESG Data Audit Q4', priority:'High', by:'David Chen', deadline:'Oct 31', progress:75, status:'In Progress' },
+  { name:'Sustainability Workshop', priority:'Medium', by:'David Chen', deadline:'Nov 05', progress:20, status:'In Progress' },
+  { name:'Supplier Diversity Report', priority:'Low', by:'Sarah Li', deadline:'Oct 20', progress:100, status:'Done' },
+  { name:'Carbon Offset Analysis', priority:'High', by:'David Chen', deadline:'Nov 15', progress:40, status:'In Progress' },
+];
+
+const EMP_CHALLENGES = [
+  { name:'Zero Waste Week', xp:200, progress:70, status:'Active', deadline:'Nov 10' },
+  { name:'Cycle to Work', xp:150, progress:100, status:'Completed', deadline:'Oct 25' },
+  { name:'Meatless Monday', xp:100, progress:45, status:'Active', deadline:'Nov 30' },
+  { name:'Switch Off Crusade', xp:125, progress:90, status:'Active', deadline:'Nov 12' },
+];
+
+const CSR_EVENTS = [
+  { id:1, name:'Annual Tree Plantation Drive', date:'Nov 12', time:'8:00 AM', venue:'Maple Park', participants:42, slots:8, img:'https://images.unsplash.com/photo-1530608132975-6b4ee4fcd308?w=400&fit=crop', type:'tree' },
+  { id:2, name:'Coastal Cleanup Day', date:'Nov 18', time:'7:30 AM', venue:'Silver Sands', participants:28, slots:22, img:'https://images.unsplash.com/photo-1618477388954-7852f32655ec?w=400&fit=crop', type:'cleanup' },
+  { id:3, name:'Blood Donation Camp', date:'Nov 22', time:'9:00 AM', venue:'City Hospital', participants:15, slots:35, img:'https://images.unsplash.com/photo-1615461065929-4f8ffed6ca40?w=400&fit=crop', type:'blood' },
+  { id:4, name:'Awareness Walk — No Plastics', date:'Dec 01', time:'6:30 AM', venue:'Central Boulevard', participants:60, slots:40, img:'https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?w=400&fit=crop', type:'awareness' },
+];
+
+const DEPT_EMPLOYEES = [
+  { name:'Elena Rodriguez', id:'ECO-8829', team:'Green Ops Alpha', att:'94.2%', esg:82, task:'ESG Data Audit Q4', pending:2, events:2, xp:12450, perf:'Excellent', avatar:'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=60&h=60&fit=crop&crop=face' },
+  { name:'Marcus Thorne', id:'ECO-1023', team:'Green Ops Beta', att:'91.0%', esg:76, task:'Supplier Review Q4', pending:3, events:1, xp:9800, perf:'Good', avatar:'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=60&h=60&fit=crop&crop=face' },
+  { name:'Priya Nair', id:'ECO-1145', team:'Green Ops Alpha', att:'97.5%', esg:88, task:'Carbon Offset Report', pending:1, events:3, xp:14200, perf:'Outstanding', avatar:'https://images.unsplash.com/photo-1551836022-d5d88e9218df?w=60&h=60&fit=crop&crop=face' },
+  { name:'James Kowalski', id:'ECO-1399', team:'Green Ops Gamma', att:'85.3%', esg:65, task:'Policy Compliance Review', pending:5, events:0, xp:6200, perf:'Needs Improvement', avatar:'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=60&h=60&fit=crop&crop=face' },
+];
+
+const SECTORS = [
+  { name:'Information Technology', head:'David Chen', employees:42, teams:6, esg:'AA+', carbon:142.5, status:'Optimized', color:'emerald' },
+  { name:'Global Operations', head:'Robert Miles', employees:87, teams:12, esg:'C', carbon:548.2, status:'Warning', color:'red' },
+  { name:'Sales & Logistics', head:'Maria Santos', employees:63, teams:8, esg:'B+', carbon:321.0, status:'Stable', color:'blue' },
+  { name:'Human Resources', head:'Laura Kim', employees:25, teams:4, esg:'AAA', carbon:12.4, status:'Elite', color:'emerald' },
+  { name:'Finance & Accounting', head:'Nathan Scott', employees:31, teams:5, esg:'A', carbon:65.3, status:'Good', color:'emerald' },
+  { name:'Research & Development', head:'Dr. Aisha Patel', employees:48, teams:7, esg:'AA', carbon:88.7, status:'Good', color:'emerald' },
+];
+
+const ADMIN_ALERTS = [
+  { type:'critical', icon:'🔴', title:'Carbon Limit Exceeded: Sector B (Ops)', msg:'Emissions reached 114% of monthly quota. Instant mitigation required.', time:'2 min ago' },
+  { type:'warning', icon:'🟡', title:'Department ESG Score Dropped', msg:'Sales & Logistics dropped from 78.4 to 71.2 this quarter.', time:'15 min ago' },
+  { type:'warning', icon:'🟡', title:'Policy Expiring Soon', msg:'ISO 14001 certification renewal due in 14 days.', time:'1 hr ago' },
+  { type:'info', icon:'🔵', title:'CSR Event Tomorrow', msg:'Annual Tree Plantation Drive at Maple Park — 42 participants registered.', time:'2 hr ago' },
+  { type:'success', icon:'🟢', title:'Audit Completion: IT Sector', msg:'Annual environmental audit finalized with 98% compliance.', time:'3 hr ago' },
+  { type:'critical', icon:'🔴', title:'High-Risk Sector Identified', msg:'Global Operations at C rating — board attention required.', time:'4 hr ago' },
+];
+
+let currentUser = null;
+let registeredEvents = new Set();
+let chatOpen = false;
+
+// =========================================================
+// AUTH
+// =========================================================
+function autofill(role) {
+  const u = USERS[role];
+  document.getElementById('login-email').value = u.email;
+  document.getElementById('login-pass').value = u.pass;
+}
+
+function attemptLogin() {
+  const email = document.getElementById('login-email').value.trim();
+  const pass = document.getElementById('login-pass').value;
+  const err = document.getElementById('login-error');
+  const user = Object.values(USERS).find(u => u.email === email && u.pass === pass);
+  if (!user) { err.classList.remove('hidden'); return; }
+  err.classList.add('hidden');
+  currentUser = user;
+  initApp();
+}
+
+function logout() {
+  currentUser = null;
+  document.getElementById('app-shell').classList.add('hidden');
+  document.getElementById('login-page').classList.remove('hidden');
+  document.getElementById('chat-window').classList.add('hidden');
+  document.getElementById('chat-fab').classList.add('hidden');
+  document.getElementById('login-email').value = '';
+  document.getElementById('login-pass').value = '';
+}
+
+function initApp() {
+  document.getElementById('login-page').classList.add('hidden');
+  document.getElementById('app-shell').classList.remove('hidden');
+  document.getElementById('chat-fab').classList.remove('hidden');
+
+  // Header
+  document.getElementById('hdr-avatar').src = currentUser.avatar;
+  document.getElementById('hdr-name').textContent = currentUser.name;
+  document.getElementById('hdr-dept').textContent = currentUser.dept;
+  document.getElementById('sb-avatar').src = currentUser.avatar;
+  document.getElementById('sb-name').textContent = currentUser.name;
+
+  const roleColors = { employee:'bg-emerald-100 text-emerald-800', manager:'bg-blue-100 text-blue-800', admin:'bg-amber-100 text-amber-800' };
+  const roleLabels = { employee:'👨‍💻 Employee', manager:'👨‍💼 Manager', admin:'👑 Admin' };
+  const rb = document.getElementById('sb-role-badge');
+  rb.className = `text-[9px] font-black px-2 py-0.5 rounded-full ${roleColors[currentUser.role]}`;
+  rb.textContent = roleLabels[currentUser.role];
+
+  buildNav();
+  buildNotifications();
+  navigateTo(firstPage());
+}
+
+function firstPage() {
+  const fp = { employee:'emp-dashboard', manager:'mgr-dashboard', admin:'adm-dashboard' };
+  return fp[currentUser.role];
+}
+
+// =========================================================
+// NAVIGATION
+// =========================================================
+const NAV_CONFIG = {
+  employee: [
+    { icon:'fa-grid-horizontal', label:'Dashboard', page:'emp-dashboard' },
+    { icon:'fa-list-check', label:'My Tasks', page:'emp-tasks' },
+    { icon:'fa-leaf', label:'My ESG', page:'emp-esg' },
+    { icon:'fa-calendar-check', label:'CSR Events', page:'emp-events' },
+    { icon:'fa-trophy', label:'Rewards & Badges', page:'emp-rewards' },
+    { icon:'fa-file-shield', label:'Policies', page:'emp-policies' },
+  ],
+  manager: [
+    { icon:'fa-grid-horizontal', label:'Dashboard', page:'mgr-dashboard' },
+    { icon:'fa-users', label:'Employee Directory', page:'mgr-employees' },
+    { icon:'fa-kanban', label:'Task Management', page:'mgr-tasks' },
+    { icon:'fa-calendar-check', label:'CSR Events', page:'mgr-events' },
+    { icon:'fa-star', label:'Rewards & Promotions', page:'mgr-rewards' },
+    { icon:'fa-chart-bar', label:'Analytics', page:'mgr-analytics' },
+  ],
+  admin: [
+    { icon:'fa-grid-horizontal', label:'Command Center', page:'adm-dashboard' },
+    { icon:'fa-industry', label:'Sector Management', page:'adm-sectors' },
+    { icon:'fa-users', label:'Employee Overview', page:'adm-employees' },
+    { icon:'fa-chart-line', label:'Org Analytics', page:'adm-analytics' },
+    { icon:'fa-bell', label:'Alert Center', page:'adm-alerts' },
+    { icon:'fa-medal', label:'Leaderboards', page:'adm-leaderboard' },
+    { icon:'fa-file-chart-pie', label:'Reports', page:'adm-reports' },
+    { icon:'fa-gear', label:'System Settings', page:'adm-settings' },
+  ],
+};
+
+function buildNav() {
+  const nav = document.getElementById('sidebar-nav');
+  nav.innerHTML = '';
+  NAV_CONFIG[currentUser.role].forEach(item => {
+    const a = document.createElement('button');
+    a.className = 'sidebar-link w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-semibold text-slate-500 text-left';
+    a.id = `nav-${item.page}`;
+    a.innerHTML = `<i class="fa ${item.icon} w-4 text-center text-base"></i> ${item.label}`;
+    a.onclick = () => navigateTo(item.page);
+    nav.appendChild(a);
+  });
+}
+
+function navigateTo(pageId) {
+  // Hide all pages
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  // Deactivate all nav items
+  document.querySelectorAll('.sidebar-link').forEach(l => l.classList.remove('active'));
+  // Activate page
+  const el = document.getElementById(`page-${pageId}`);
+  if (el) { el.classList.add('active'); buildPage(pageId); }
+  const nav = document.getElementById(`nav-${pageId}`);
+  if (nav) nav.classList.add('active');
+  // Breadcrumb
+  const labels = NAV_CONFIG[currentUser.role];
+  const item = labels.find(l => l.page === pageId);
+  document.getElementById('breadcrumb').textContent = item ? `/ ${item.label}` : '';
+}
+
+// =========================================================
+// PAGE BUILDERS
+// =========================================================
+function buildPage(id) {
+  const builders = {
+    'emp-dashboard': buildEmpDashboard,
+    'emp-tasks': buildEmpTasks,
+    'emp-esg': buildEmpEsg,
+    'emp-events': buildEmpEvents,
+    'emp-rewards': buildEmpRewards,
+    'emp-policies': buildEmpPolicies,
+    'mgr-dashboard': buildMgrDashboard,
+    'mgr-employees': buildMgrEmployees,
+    'mgr-tasks': buildMgrTasks,
+    'mgr-events': buildMgrEvents,
+    'mgr-rewards': buildMgrRewards,
+    'mgr-analytics': buildMgrAnalytics,
+    'adm-dashboard': buildAdmDashboard,
+    'adm-sectors': buildAdmSectors,
+    'adm-employees': buildAdmEmployees,
+    'adm-analytics': buildAdmAnalytics,
+    'adm-alerts': buildAdmAlerts,
+    'adm-leaderboard': buildAdmLeaderboard,
+    'adm-reports': buildAdmReports,
+    'adm-settings': buildAdmSettings,
+  };
+  if (builders[id]) builders[id]();
+}
+
+// =========================================================
+// HELPERS
+// =========================================================
+function pct(v) { return `${v}%`; }
+function priorityBadge(p) {
+  const colors = { High:'bg-red-50 text-red-600 border border-red-100', Medium:'bg-amber-50 text-amber-600 border border-amber-100', Low:'bg-slate-100 text-slate-500' };
+  return `<span class="px-2 py-0.5 rounded text-[10px] font-bold ${colors[p]||colors.Low}">${p}</span>`;
+}
+function progressBar(v, color='bg-emerald-500') {
+  return `<div class="progress"><div class="progress-fill ${color}" style="width:${v}%"></div></div>`;
+}
+function sectionTitle(icon, text) {
+  return `<div class="flex items-center gap-2 mb-1"><i class="fa ${icon} text-[#0F3C2C]"></i><h3 class="font-black text-slate-800 text-base">${text}</h3></div>`;
+}
+function kpiCard(icon, label, value, sub='', color='text-emerald-600') {
+  return `<div class="card p-5 hover:-translate-y-1 transition-transform">
+    <div class="flex items-center justify-between mb-3">
+      <span class="text-xs font-black text-slate-400 uppercase tracking-widest">${label}</span>
+      <div class="w-9 h-9 rounded-xl bg-slate-50 flex items-center justify-center text-slate-500"><i class="fa ${icon}"></i></div>
+    </div>
+    <div class="text-3xl font-black ${color}">${value}</div>
+    ${sub ? `<small class="text-[10px] text-slate-400 font-semibold mt-1 block">${sub}</small>` : ''}
+  </div>`;
+}
+function esgRingChart(label, val, color) {
+  const deg = val * 3.6;
+  return `<div class="text-center">
+    <div class="ring-wrap mx-auto" style="background:conic-gradient(${color} ${deg}deg,#f1f5f9 0deg)">
+      <span class="ring-inner">${val}%</span>
+    </div>
+    <p class="text-[10px] font-black text-slate-400 uppercase tracking-wider mt-2">${label}</p>
+  </div>`;
+}
+function alertCard(a) {
+  const types = { critical:'alert-critical bg-red-50', warning:'alert-warning bg-amber-50', info:'alert-info bg-blue-50', success:'alert-success bg-emerald-50' };
+  return `<div class="p-4 rounded-xl ${types[a.type]||''}">
+    <div class="flex justify-between items-start">
+      <h5 class="font-bold text-xs text-slate-800">${a.icon} ${a.title}</h5>
+      <small class="text-[9px] text-slate-400 shrink-0 ml-2">${a.time}</small>
+    </div>
+    <p class="text-[10px] text-slate-500 mt-1">${a.msg}</p>
+  </div>`;
+}
+function eventCard(e, registered) {
+  const reg = registeredEvents.has(e.id);
+  return `<div class="card overflow-hidden hover:-translate-y-1 transition-transform">
+    <img src="${e.img}" class="w-full h-36 object-cover">
+    <div class="p-4 space-y-3">
+      <h4 class="font-bold text-sm text-slate-800">${e.name}</h4>
+      <div class="flex flex-wrap gap-2 text-[10px] font-semibold text-slate-400">
+        <span><i class="fa fa-calendar mr-1"></i>${e.date}</span>
+        <span><i class="fa fa-clock mr-1"></i>${e.time}</span>
+        <span><i class="fa fa-map-marker mr-1"></i>${e.venue}</span>
+      </div>
+      <div class="flex justify-between text-[10px] font-bold">
+        <span class="text-slate-500"><i class="fa fa-users mr-1"></i>${e.participants} joined</span>
+        <span class="${e.slots < 10 ? 'text-red-500':'text-emerald-600'}">${e.slots} slots left</span>
+      </div>
+      <button onclick="toggleEventReg(${e.id},this)"
+        class="w-full py-2 rounded-xl font-bold text-xs transition-all ${reg?'bg-red-50 text-red-600 border border-red-200 hover:bg-red-100':'bg-[#0F3C2C] text-white hover:bg-[#09291D]'}">
+        ${reg ? 'Cancel Registration' : 'Register Now'}
+      </button>
+    </div>
+  </div>`;
+}
+function toggleEventReg(id, btn) {
+  if (registeredEvents.has(id)) { registeredEvents.delete(id); }
+  else { registeredEvents.add(id); }
+  const e = CSR_EVENTS.find(x => x.id === id);
+  const reg = registeredEvents.has(id);
+  btn.textContent = reg ? 'Cancel Registration' : 'Register Now';
+  btn.className = `w-full py-2 rounded-xl font-bold text-xs transition-all ${reg?'bg-red-50 text-red-600 border border-red-200 hover:bg-red-100':'bg-[#0F3C2C] text-white hover:bg-[#09291D]'}`;
+}
+
+// =========================================================
+// EMPLOYEE PAGES
+// =========================================================
+function buildEmpDashboard() {
+  const u = currentUser;
+  const el = document.getElementById('page-emp-dashboard');
+  el.innerHTML = `
+  <!-- Row 1: Profile + Attendance + XP -->
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <!-- Profile Card -->
+    <div class="card p-6">
+      <div class="flex items-start gap-4">
+        <img src="${u.avatar}" class="w-16 h-16 rounded-2xl object-cover">
+        <div>
+          <div class="flex items-center gap-2 mb-1">
+            <h3 class="font-bold text-slate-800">${u.name}</h3>
+            <span class="stat-chip ${u.status==='Active'?'bg-emerald-100 text-emerald-700':'bg-amber-100 text-amber-700'}">${u.status}</span>
+          </div>
+          <p class="text-[10px] font-semibold text-slate-400">Emp ID: #${u.empId}</p>
+          <span class="mt-2 inline-block bg-[#E2ECE9] text-[#0F3C2C] px-3 py-1 rounded-lg text-[10px] font-black uppercase">${u.dept}</span>
+        </div>
+      </div>
+      <div class="mt-5 grid grid-cols-2 gap-3 border-t pt-4 text-xs">
+        <div><span class="text-slate-400 text-[9px] uppercase font-bold block">Age</span><span class="font-bold text-slate-700">${u.age} yrs</span></div>
+        <div><span class="text-slate-400 text-[9px] uppercase font-bold block">Gender</span><span class="font-bold text-slate-700">${u.gender}</span></div>
+        <div><span class="text-slate-400 text-[9px] uppercase font-bold block">Sector</span><span class="font-bold text-slate-700">${u.sector}</span></div>
+        <div><span class="text-slate-400 text-[9px] uppercase font-bold block">Team</span><span class="font-bold text-slate-700">${u.team}</span></div>
+        <div><span class="text-slate-400 text-[9px] uppercase font-bold block">Manager</span><span class="font-bold text-slate-700">${u.manager}</span></div>
+        <div><span class="text-slate-400 text-[9px] uppercase font-bold block">Joined</span><span class="font-bold text-slate-700">${u.joined}</span></div>
+      </div>
+    </div>
+    <!-- Attendance Card -->
+    <div class="card p-6 space-y-4">
+      <div class="flex justify-between items-center">
+        <h4 class="text-xs font-black text-slate-800 uppercase tracking-wider">Attendance & Presence</h4>
+        <span class="text-[10px] text-slate-400 font-bold">October 2023</span>
+      </div>
+      <div class="grid grid-cols-7 gap-1.5 text-center text-[9px] font-bold text-slate-400">
+        ${['M','T','W','T','F','S','S'].map(d=>`<span>${d}</span>`).join('')}
+        ${[23,24,25,26].map(d=>`<span class="p-2 bg-emerald-800 text-white rounded-lg">${d}</span>`).join('')}
+        <span class="p-2 bg-emerald-400 text-white rounded-lg">27</span>
+        <span class="p-2 bg-slate-100 text-slate-300 rounded-lg">28</span>
+        <span class="p-2 bg-slate-100 text-slate-300 rounded-lg">29</span>
+      </div>
+      <div class="grid grid-cols-3 gap-3 text-center border-t pt-3">
+        <div><span class="text-[9px] text-slate-400 font-bold block uppercase">Monthly Avg</span><span class="font-black text-slate-800 text-lg">94.2%</span></div>
+        <div><span class="text-[9px] text-slate-400 font-bold block uppercase">Present</span><span class="font-black text-slate-800 text-lg">22</span></div>
+        <div><span class="text-[9px] text-slate-400 font-bold block uppercase">Leave Balance</span><span class="font-black text-slate-800 text-lg">12d</span></div>
+      </div>
+      <div class="grid grid-cols-2 gap-3 text-xs">
+        <div class="bg-slate-50 rounded-xl p-3"><span class="text-slate-400 block text-[9px] font-bold uppercase">Login Time</span><span class="font-black text-slate-800">09:04 AM</span></div>
+        <div class="bg-slate-50 rounded-xl p-3"><span class="text-slate-400 block text-[9px] font-bold uppercase">WFH Count</span><span class="font-black text-slate-800">5 days</span></div>
+      </div>
+    </div>
+    <!-- XP Card -->
+    <div class="bg-[#0F3C2C] text-white p-6 rounded-2xl flex flex-col justify-between">
+      <div>
+        <span class="text-[9px] font-black text-emerald-300 uppercase tracking-widest">Sustainability XP</span>
+        <h2 class="text-4xl font-black mt-1">${u.xp.toLocaleString()}</h2>
+        <p class="text-emerald-400 text-xs font-bold mt-1">+850 this month</p>
+      </div>
+      <div class="mt-4 space-y-2">
+        <div class="flex justify-between text-[10px] text-emerald-300 font-bold">
+          <span>Leaderboard Rank</span><span>#${u.rank}</span>
+        </div>
+        <div class="w-full h-2 bg-white/10 rounded-full overflow-hidden">
+          <div class="h-full bg-emerald-400" style="width:78%"></div>
+        </div>
+        <p class="text-[10px] text-emerald-300 font-semibold">2,550 XP to "Sustainability Guru"</p>
+      </div>
+      <div class="mt-4 flex flex-wrap gap-1.5">
+        ${u.badges.map(b=>`<span class="bg-white/10 text-white text-[9px] font-bold px-2.5 py-1 rounded-full border border-white/10">${b}</span>`).join('')}
+      </div>
+    </div>
+  </div>
+
+  <!-- Row 2: ESG Rings + Tasks -->
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <!-- ESG Contribution -->
+    <div class="card p-6">
+      <h4 class="text-xs font-black text-slate-800 uppercase tracking-widest mb-4">🌱 My ESG Contribution</h4>
+      <div class="text-center mb-4">
+        <div class="ring-wrap mx-auto" style="width:110px;height:110px;background:conic-gradient(#0F3C2C ${u.scores.overall*3.6}deg,#f1f5f9 0deg)">
+          <span class="ring-inner text-lg">${u.scores.overall}%</span>
+        </div>
+        <p class="text-xs font-black text-slate-800 mt-2">Overall ESG Score</p>
+        <span class="stat-chip bg-emerald-100 text-emerald-800 mt-1 inline-block">Platinum Tier</span>
+      </div>
+      <div class="flex justify-around">
+        ${esgRingChart('ENV',u.scores.env,'#10b981')}
+        ${esgRingChart('SOCIAL',u.scores.social,'#3b82f6')}
+        ${esgRingChart('GOV',u.scores.gov,'#f59e0b')}
+      </div>
+    </div>
+    <!-- Current Tasks -->
+    <div class="card p-6 lg:col-span-2">
+      <div class="flex justify-between items-center mb-4">
+        <h4 class="text-xs font-black text-slate-800 uppercase tracking-widest">📋 Current Tasks</h4>
+        <button onclick="navigateTo('emp-tasks')" class="text-[10px] font-bold text-[#0F3C2C] hover:underline">View All</button>
+      </div>
+      <table class="w-full text-xs border-collapse">
+        <thead><tr class="text-slate-400 border-b font-bold uppercase text-[9px] tracking-wider">
+          <th class="py-2 text-left">Task</th><th class="py-2 text-left">Priority</th><th class="py-2 text-left">Progress</th><th class="py-2 text-left">Deadline</th>
+        </tr></thead>
+        <tbody>
+          ${EMP_TASKS.slice(0,3).map(t=>`<tr class="border-b border-slate-50 hover:bg-slate-50/50">
+            <td class="py-3 font-bold text-slate-700">${t.name}</td>
+            <td class="py-3">${priorityBadge(t.priority)}</td>
+            <td class="py-3 w-36"><div class="flex items-center gap-2">${progressBar(t.progress)}<span class="text-[10px] font-bold text-slate-500">${t.progress}%</span></div></td>
+            <td class="py-3 text-slate-400 font-semibold">${t.deadline}</td>
+          </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Row 3: Challenges + Events Preview -->
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <!-- My Challenges -->
+    <div class="card p-6 space-y-4">
+      <h4 class="text-xs font-black text-slate-800 uppercase tracking-widest">🎯 My Active Challenges</h4>
+      ${EMP_CHALLENGES.filter(c=>c.status==='Active').map(c=>`
+        <div class="p-3.5 bg-slate-50 rounded-xl border space-y-2">
+          <div class="flex justify-between items-center">
+            <span class="font-bold text-sm text-slate-800">${c.name}</span>
+            <span class="stat-chip bg-emerald-100 text-emerald-700">+${c.xp} XP</span>
+          </div>
+          <div class="flex items-center gap-2">${progressBar(c.progress)}<span class="text-[10px] font-bold text-slate-500">${c.progress}%</span></div>
+          <span class="text-[9px] text-slate-400 font-semibold"><i class="fa fa-calendar mr-1"></i>Ends ${c.deadline}</span>
+        </div>`).join('')}
+    </div>
+    <!-- Upcoming Events -->
+    <div class="card p-6 space-y-4">
+      <div class="flex justify-between items-center">
+        <h4 class="text-xs font-black text-slate-800 uppercase tracking-widest">🌳 Upcoming Events</h4>
+        <button onclick="navigateTo('emp-events')" class="text-[10px] font-bold text-[#0F3C2C] hover:underline">View All</button>
+      </div>
+      ${CSR_EVENTS.slice(0,2).map(e=>`<div class="flex gap-3 items-center p-3 bg-slate-50 rounded-xl border">
+        <img src="${e.img}" class="w-12 h-12 rounded-xl object-cover shrink-0">
+        <div class="flex-1 min-w-0">
+          <h5 class="font-bold text-xs text-slate-800 truncate">${e.name}</h5>
+          <p class="text-[10px] text-slate-400 font-semibold">${e.date} · ${e.venue}</p>
+          <p class="text-[10px] ${e.slots<10?'text-red-500':'text-emerald-600'} font-bold">${e.slots} slots remaining</p>
+        </div>
+        <button onclick="toggleEventReg(${e.id},this)" class="shrink-0 bg-[#0F3C2C] text-white text-[9px] font-black px-2.5 py-1.5 rounded-lg hover:bg-[#09291D] transition-all">Register</button>
+      </div>`).join('')}
+    </div>
+  </div>`;
+}
+
+function buildEmpTasks() {
+  const el = document.getElementById('page-emp-tasks');
+  el.innerHTML = `
+  <div class="card p-6">
+    <div class="flex justify-between items-center mb-6">
+      ${sectionTitle('fa-list-check','My Tasks')}
+      <div class="flex gap-2">
+        <select class="border border-slate-200 rounded-xl px-3 py-2 text-xs font-semibold focus:outline-none">
+          <option>All Status</option><option>In Progress</option><option>Done</option>
+        </select>
+        <select class="border border-slate-200 rounded-xl px-3 py-2 text-xs font-semibold focus:outline-none">
+          <option>All Priority</option><option>High</option><option>Medium</option><option>Low</option>
+        </select>
+      </div>
+    </div>
+    <!-- KPIs -->
+    <div class="grid grid-cols-4 gap-4 mb-6">
+      ${kpiCard('fa-list','Total Tasks',EMP_TASKS.length,'','text-slate-800')}
+      ${kpiCard('fa-spinner','In Progress',EMP_TASKS.filter(t=>t.status==='In Progress').length,'','text-blue-600')}
+      ${kpiCard('fa-check-circle','Completed',EMP_TASKS.filter(t=>t.status==='Done').length,'','text-emerald-600')}
+      ${kpiCard('fa-triangle-exclamation','Overdue',1,'','text-red-600')}
+    </div>
+    <!-- Full Task Table -->
+    <table class="w-full text-xs border-collapse">
+      <thead><tr class="text-slate-400 border-b font-bold uppercase text-[9px] tracking-wider bg-slate-50">
+        <th class="py-3 px-4 text-left rounded-l-xl">Task Name</th>
+        <th class="py-3 px-4 text-left">Priority</th>
+        <th class="py-3 px-4 text-left">Assigned By</th>
+        <th class="py-3 px-4 text-left">Progress</th>
+        <th class="py-3 px-4 text-left">Deadline</th>
+        <th class="py-3 px-4 text-left rounded-r-xl">Status</th>
+      </tr></thead>
+      <tbody>
+        ${EMP_TASKS.map(t=>`<tr class="border-b border-slate-50 hover:bg-slate-50/50">
+          <td class="py-3 px-4 font-bold text-slate-800">${t.name}</td>
+          <td class="py-3 px-4">${priorityBadge(t.priority)}</td>
+          <td class="py-3 px-4 text-slate-500 font-semibold">${t.by}</td>
+          <td class="py-3 px-4 w-40"><div class="flex items-center gap-2">${progressBar(t.progress)}<span class="font-bold text-slate-500 text-[10px]">${t.progress}%</span></div></td>
+          <td class="py-3 px-4 text-slate-400 font-semibold">${t.deadline}</td>
+          <td class="py-3 px-4"><span class="stat-chip ${t.status==='Done'?'bg-emerald-50 text-emerald-700':'bg-blue-50 text-blue-700'}">${t.status}</span></td>
+        </tr>`).join('')}
+      </tbody>
+    </table>
+  </div>
+  <!-- Pending/Overdue Summary -->
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+    <div class="card p-5">
+      <h5 class="text-xs font-black text-slate-800 uppercase tracking-wider mb-3 flex items-center gap-1.5"><i class="fa fa-hourglass text-amber-500"></i> Pending Tasks</h5>
+      ${EMP_TASKS.filter(t=>t.status!=='Done').map(t=>`<div class="flex justify-between items-center py-2 border-b border-slate-50">
+        <span class="text-xs font-semibold text-slate-700">${t.name}</span>
+        ${priorityBadge(t.priority)}
+      </div>`).join('')}
+    </div>
+    <div class="card p-5">
+      <h5 class="text-xs font-black text-slate-800 uppercase tracking-wider mb-3 flex items-center gap-1.5"><i class="fa fa-fire text-red-500"></i> Due Today</h5>
+      <div class="text-center py-8 text-slate-400"><i class="fa fa-check-circle text-2xl text-emerald-400 mb-2 block"></i><span class="text-xs font-semibold">No tasks due today!</span></div>
+    </div>
+    <div class="card p-5">
+      <h5 class="text-xs font-black text-slate-800 uppercase tracking-wider mb-3 flex items-center gap-1.5"><i class="fa fa-calendar text-blue-500"></i> Upcoming Deadlines</h5>
+      ${EMP_TASKS.filter(t=>t.status!=='Done').map(t=>`<div class="flex justify-between items-center py-2 border-b border-slate-50">
+        <span class="text-xs font-semibold text-slate-700 truncate">${t.name}</span>
+        <span class="text-[10px] font-bold text-slate-400 shrink-0 ml-2">${t.deadline}</span>
+      </div>`).join('')}
+    </div>
+  </div>`;
+}
+
+function buildEmpEsg() {
+  const u = currentUser;
+  const el = document.getElementById('page-emp-esg');
+  el.innerHTML = `
+  <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+    ${kpiCard('fa-leaf','ESG Score',u.scores.overall,'Platinum Tier','text-emerald-600')}
+    ${kpiCard('fa-cloud','Environmental',u.scores.env+'%','','text-emerald-600')}
+    ${kpiCard('fa-users','Social',u.scores.social+'%','','text-blue-600')}
+    ${kpiCard('fa-balance-scale','Governance',u.scores.gov+'%','','text-amber-600')}
+  </div>
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <div class="card p-6 flex flex-col items-center justify-center gap-4">
+      ${sectionTitle('fa-leaf','My ESG Meter')}
+      <div class="ring-wrap" style="width:140px;height:140px;background:conic-gradient(#0F3C2C ${u.scores.overall*3.6}deg,#f1f5f9 0deg)">
+        <div class="ring-inner text-center"><div class="text-2xl font-black">${u.scores.overall}</div><div class="text-[10px] text-slate-400 font-bold">/ 100</div></div>
+      </div>
+      <div class="flex gap-4">
+        ${esgRingChart('Environmental',u.scores.env,'#10b981')}
+        ${esgRingChart('Social',u.scores.social,'#3b82f6')}
+        ${esgRingChart('Governance',u.scores.gov,'#f59e0b')}
+      </div>
+    </div>
+    <div class="card p-6 lg:col-span-2 space-y-4">
+      ${sectionTitle('fa-chart-line','ESG Score Trend — Last 6 Months')}
+      <canvas id="esg-trend-chart" height="180"></canvas>
+    </div>
+  </div>
+  <div class="card p-6 space-y-4">
+    ${sectionTitle('fa-trophy','My Challenges')}
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      ${EMP_CHALLENGES.map(c=>`<div class="p-4 bg-slate-50 rounded-xl border flex flex-col gap-2">
+        <div class="flex justify-between">
+          <span class="font-bold text-sm text-slate-800">${c.name}</span>
+          <span class="stat-chip ${c.status==='Completed'?'bg-emerald-100 text-emerald-700':'bg-blue-100 text-blue-700'}">${c.status}</span>
+        </div>
+        <div class="flex items-center gap-2">${progressBar(c.progress,c.status==='Completed'?'bg-emerald-500':'bg-blue-500')}<span class="text-[10px] font-bold">${c.progress}%</span></div>
+        <div class="flex justify-between text-[10px] font-semibold text-slate-400">
+          <span><i class="fa fa-calendar mr-1"></i>${c.deadline}</span>
+          <span class="text-emerald-600 font-bold">+${c.xp} XP</span>
+        </div>
+      </div>`).join('')}
+    </div>
+  </div>`;
+  setTimeout(()=>{
+    const ctx = document.getElementById('esg-trend-chart');
+    if(ctx) new Chart(ctx,{ type:'line', data:{ labels:['May','Jun','Jul','Aug','Sep','Oct'], datasets:[
+      {label:'Overall',data:[72,75,78,76,80,82],borderColor:'#0F3C2C',tension:.4,fill:false,borderWidth:2},
+      {label:'Env',data:[65,68,72,70,75,80],borderColor:'#10b981',tension:.4,fill:false,borderWidth:2},
+      {label:'Social',data:[55,58,60,62,63,65],borderColor:'#3b82f6',tension:.4,fill:false,borderWidth:2},
+      {label:'Gov',data:[88,90,90,92,94,95],borderColor:'#f59e0b',tension:.4,fill:false,borderWidth:2},
+    ]}, options:{plugins:{legend:{labels:{font:{size:10}}}},scales:{y:{min:40,max:100}}} });
+  },100);
+}
+
+function buildEmpEvents() {
+  const el = document.getElementById('page-emp-events');
+  el.innerHTML = `
+  <div class="flex justify-between items-center">
+    ${sectionTitle('fa-calendar-check','CSR Events & Volunteering')}
+    <div class="flex gap-3 text-xs font-bold text-slate-500">
+      <span class="stat-chip bg-slate-100">${CSR_EVENTS.length} Upcoming</span>
+      <span class="stat-chip bg-emerald-100 text-emerald-700">${registeredEvents.size} Registered</span>
+    </div>
+  </div>
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6" id="events-grid">
+    ${CSR_EVENTS.map(e=>eventCard(e)).join('')}
+  </div>
+  ${registeredEvents.size > 0 ? `
+  <div class="card p-6">
+    <h4 class="text-xs font-black text-slate-800 uppercase tracking-widest mb-4">✅ My Registered Events</h4>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+      ${CSR_EVENTS.filter(e=>registeredEvents.has(e.id)).map(e=>`
+      <div class="p-4 bg-emerald-50 border border-emerald-200 rounded-xl">
+        <h5 class="font-bold text-sm text-slate-800">${e.name}</h5>
+        <p class="text-[10px] text-slate-500 font-semibold mt-1">${e.date} · ${e.venue}</p>
+        <span class="stat-chip bg-emerald-100 text-emerald-700 mt-2 inline-block">Registered</span>
+      </div>`).join('')}
+    </div>
+  </div>` : ''}`;
+}
+
+function buildEmpRewards() {
+  const u = currentUser;
+  const el = document.getElementById('page-emp-rewards');
+  el.innerHTML = `
+  <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+    ${kpiCard('fa-star','Total XP',u.xp.toLocaleString(),'','text-amber-600')}
+    ${kpiCard('fa-medal','Badges',u.badges.length,'Earned','text-blue-600')}
+    ${kpiCard('fa-trophy','Rank','#'+u.rank,'Organization','text-emerald-600')}
+    ${kpiCard('fa-gift','Rewards','3','This Quarter','text-purple-600')}
+  </div>
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <div class="card p-6 space-y-4">
+      ${sectionTitle('fa-medal','My Badges')}
+      <div class="grid grid-cols-3 gap-3">
+        ${u.badges.map(b=>`<div class="text-center p-4 bg-gradient-to-b from-amber-50 to-white rounded-2xl border border-amber-100">
+          <span class="text-3xl block mb-2">${b.split(' ')[0]}</span>
+          <p class="text-[10px] font-bold text-slate-700 leading-tight">${b.substring(b.indexOf(' ')+1)}</p>
+        </div>`).join('')}
+        <div class="text-center p-4 bg-slate-50 rounded-2xl border border-dashed border-slate-200">
+          <span class="text-3xl block mb-2 text-slate-300">🔒</span>
+          <p class="text-[10px] font-bold text-slate-300 leading-tight">Next Badge</p>
+        </div>
+      </div>
+    </div>
+    <div class="card p-6 space-y-4">
+      ${sectionTitle('fa-chart-bar','Leaderboard — Department')}
+      ${DEPT_EMPLOYEES.sort((a,b)=>b.xp-a.xp).map((e,i)=>`<div class="leaderboard-row flex items-center gap-3 p-3 rounded-xl transition-all">
+        <span class="w-7 h-7 flex items-center justify-center font-black text-sm rounded-full ${i===0?'bg-amber-100 text-amber-600':i===1?'bg-slate-100 text-slate-600':i===2?'bg-orange-100 text-orange-600':'bg-slate-50 text-slate-400'}">${i+1}</span>
+        <img src="${e.avatar}" class="w-8 h-8 rounded-lg object-cover">
+        <div class="flex-1">
+          <p class="text-xs font-bold text-slate-800">${e.name}</p>
+          <p class="text-[10px] font-semibold text-slate-400">${e.team}</p>
+        </div>
+        <span class="font-black text-sm text-[#0F3C2C]">${e.xp.toLocaleString()} XP</span>
+      </div>`).join('')}
+    </div>
+  </div>`;
+}
+
+function buildEmpPolicies() {
+  const el = document.getElementById('page-emp-policies');
+  const policies = [
+    { icon:'🌱', name:'ESG Sustainability Policy', cat:'ESG', updated:'Oct 2023', status:'Acknowledged' },
+    { icon:'🔒', name:'Data Privacy & GDPR Policy', cat:'Compliance', updated:'Sep 2023', status:'Pending' },
+    { icon:'🛡️', name:'Workplace Safety Guidelines', cat:'Safety', updated:'Aug 2023', status:'Acknowledged' },
+    { icon:'📋', name:'Code of Conduct', cat:'HR', updated:'Jul 2023', status:'Acknowledged' },
+    { icon:'♻️', name:'Waste Management Protocol', cat:'Environmental', updated:'Oct 2023', status:'Pending' },
+    { icon:'🤝', name:'Diversity & Inclusion Policy', cat:'Social', updated:'Sep 2023', status:'Acknowledged' },
+  ];
+  el.innerHTML = `
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+    ${kpiCard('fa-file-shield','Total Policies',policies.length,'','text-slate-800')}
+    ${kpiCard('fa-check','Acknowledged',policies.filter(p=>p.status==='Acknowledged').length,'','text-emerald-600')}
+    ${kpiCard('fa-clock','Pending Review',policies.filter(p=>p.status==='Pending').length,'','text-amber-600')}
+  </div>
+  <div class="card p-6">
+    ${sectionTitle('fa-file-shield','Company Policies')}
+    <div class="mt-4 space-y-3">
+      ${policies.map(p=>`<div class="flex items-center justify-between p-4 bg-slate-50 rounded-xl border hover:border-emerald-200 transition-all">
+        <div class="flex items-center gap-3">
+          <span class="text-2xl">${p.icon}</span>
+          <div>
+            <h5 class="font-bold text-sm text-slate-800">${p.name}</h5>
+            <p class="text-[10px] text-slate-400 font-semibold">${p.cat} · Updated ${p.updated}</p>
+          </div>
+        </div>
+        <div class="flex items-center gap-2">
+          <span class="stat-chip ${p.status==='Acknowledged'?'bg-emerald-100 text-emerald-700':'bg-amber-100 text-amber-700'}">${p.status}</span>
+          <button class="border border-slate-200 text-slate-600 hover:border-[#0F3C2C] hover:text-[#0F3C2C] font-bold text-[10px] px-2.5 py-1 rounded-lg transition-all">View</button>
+          <button class="border border-slate-200 text-slate-600 font-bold text-[10px] px-2.5 py-1 rounded-lg hover:bg-slate-50 transition-all">Download</button>
+          ${p.status==='Pending'?`<button class="bg-[#0F3C2C] text-white font-bold text-[10px] px-2.5 py-1 rounded-lg hover:bg-[#09291D] transition-all">Accept</button>`:''}
+        </div>
+      </div>`).join('')}
+    </div>
+  </div>`;
+}
+
+// =========================================================
+// MANAGER PAGES
+// =========================================================
+function buildMgrDashboard() {
+  const u = currentUser;
+  const el = document.getElementById('page-mgr-dashboard');
+  el.innerHTML = `
+  <!-- KPIs -->
+  <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+    ${kpiCard('fa-users','Total Employees',DEPT_EMPLOYEES.length,'IT Operations','text-slate-800')}
+    ${kpiCard('fa-user-check','Active',DEPT_EMPLOYEES.filter(e=>true).length,'All Active','text-emerald-600')}
+    ${kpiCard('fa-leaf','Dept ESG Score','88.0','Gold Rating','text-[#0F3C2C]')}
+    ${kpiCard('fa-chart-bar','CSR Activities','6','This Month','text-blue-600')}
+  </div>
+
+  <!-- Dept Summary + Alerts -->
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <div class="card p-6 lg:col-span-2">
+      ${sectionTitle('fa-users','Department Summary')}
+      <div class="mt-4 grid grid-cols-3 gap-4">
+        <div class="text-center p-4 bg-slate-50 rounded-xl">
+          <span class="text-3xl font-black text-slate-800">94.2%</span>
+          <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mt-1">Avg Attendance</p>
+        </div>
+        <div class="text-center p-4 bg-emerald-50 rounded-xl">
+          <span class="text-3xl font-black text-emerald-700">88.0</span>
+          <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mt-1">ESG Score</p>
+        </div>
+        <div class="text-center p-4 bg-blue-50 rounded-xl">
+          <span class="text-3xl font-black text-blue-700">142t</span>
+          <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mt-1">Carbon (MT)</p>
+        </div>
+      </div>
+      <div class="mt-4">
+        <h5 class="text-xs font-black text-slate-800 uppercase tracking-wider mb-3">Employee Performance Snapshot</h5>
+        ${DEPT_EMPLOYEES.map(e=>`<div class="flex items-center gap-3 py-2.5 border-b border-slate-50">
+          <img src="${e.avatar}" class="w-8 h-8 rounded-lg object-cover">
+          <div class="flex-1 min-w-0">
+            <p class="text-xs font-bold text-slate-800 truncate">${e.name}</p>
+            <p class="text-[10px] text-slate-400 font-semibold">${e.team}</p>
+          </div>
+          <div class="w-20 text-right">
+            <span class="text-xs font-black text-slate-800">${e.esg}</span>
+            <span class="text-[9px] text-slate-400"> ESG</span>
+          </div>
+          <span class="stat-chip ${e.perf==='Outstanding'?'bg-emerald-100 text-emerald-700':e.perf==='Needs Improvement'?'bg-red-100 text-red-700':'bg-blue-100 text-blue-700'}">${e.perf}</span>
+        </div>`).join('')}
+      </div>
+    </div>
+    <div class="card p-6 space-y-3">
+      <h4 class="text-xs font-black text-slate-800 uppercase tracking-widest">🔔 Department Alerts</h4>
+      ${ADMIN_ALERTS.slice(0,4).map(a=>alertCard(a)).join('')}
+    </div>
+  </div>
+
+  <!-- Rewards Module -->
+  <div class="card p-6 space-y-4">
+    ${sectionTitle('fa-star','Reward Recommendations — AI-Powered')}
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+      ${DEPT_EMPLOYEES.map(e=>{
+        const bonus = Math.round(e.esg * 0.5);
+        return `<div class="p-4 bg-gradient-to-b from-slate-50 to-white rounded-2xl border space-y-3">
+          <div class="flex items-center gap-2">
+            <img src="${e.avatar}" class="w-8 h-8 rounded-xl object-cover">
+            <div><p class="font-bold text-xs text-slate-800">${e.name}</p></div>
+          </div>
+          <div class="space-y-1 text-[10px] text-slate-500">
+            <div class="flex justify-between"><span>ESG Score</span><span class="font-black text-slate-800">${e.esg}/100</span></div>
+            <div class="flex justify-between"><span>XP Earned</span><span class="font-black text-slate-800">${e.xp.toLocaleString()}</span></div>
+            <div class="flex justify-between"><span>ESG Bonus</span><span class="font-black text-emerald-700">$${bonus}</span></div>
+          </div>
+          <span class="stat-chip ${e.perf==='Outstanding'?'bg-purple-100 text-purple-700':e.perf==='Needs Improvement'?'bg-red-100 text-red-700':'bg-emerald-100 text-emerald-700'} block text-center">
+            ${e.perf==='Outstanding'?'Promote Candidate':e.perf==='Needs Improvement'?'Needs Coaching':'Good Standing'}
+          </span>
+        </div>`;
+      }).join('')}
+    </div>
+  </div>`;
+}
+
+function buildMgrEmployees() {
+  const el = document.getElementById('page-mgr-employees');
+  el.innerHTML = `
+  <div class="card p-6">
+    <div class="flex justify-between items-center mb-5">
+      ${sectionTitle('fa-users','Employee Directory')}
+      <div class="flex gap-2">
+        <input type="text" placeholder="Search employees..." class="border border-slate-200 rounded-xl px-3 py-2 text-xs focus:outline-none focus:ring-1 focus:ring-[#0F3C2C]">
+        <select class="border border-slate-200 rounded-xl px-3 py-2 text-xs focus:outline-none"><option>All Teams</option></select>
+        <select class="border border-slate-200 rounded-xl px-3 py-2 text-xs focus:outline-none"><option>All Performance</option></select>
+      </div>
+    </div>
+    <div class="overflow-x-auto">
+      <table class="w-full text-xs border-collapse">
+        <thead><tr class="bg-slate-50 text-slate-400 font-bold uppercase text-[9px] tracking-wider">
+          <th class="py-3 px-4 text-left rounded-l-xl">Employee</th>
+          <th class="py-3 px-4 text-left">Team / Sector</th>
+          <th class="py-3 px-4 text-left">Attendance</th>
+          <th class="py-3 px-4 text-left">ESG Score</th>
+          <th class="py-3 px-4 text-left">Current Task</th>
+          <th class="py-3 px-4 text-left">Pending</th>
+          <th class="py-3 px-4 text-left">Events</th>
+          <th class="py-3 px-4 text-left">XP</th>
+          <th class="py-3 px-4 text-left rounded-r-xl">Performance</th>
+        </tr></thead>
+        <tbody>
+          ${DEPT_EMPLOYEES.map(e=>`<tr class="border-b border-slate-50 hover:bg-slate-50/50">
+            <td class="py-3 px-4"><div class="flex items-center gap-2">
+              <img src="${e.avatar}" class="w-8 h-8 rounded-xl object-cover">
+              <div><p class="font-bold text-slate-800">${e.name}</p><p class="text-[9px] text-slate-400 font-semibold">${e.id}</p></div>
+            </div></td>
+            <td class="py-3 px-4 font-semibold text-slate-500">${e.team}</td>
+            <td class="py-3 px-4 font-bold ${parseFloat(e.att)>90?'text-emerald-600':'text-red-600'}">${e.att}</td>
+            <td class="py-3 px-4"><div class="flex items-center gap-1"><span class="font-black text-slate-800">${e.esg}</span><span class="text-[9px] text-slate-400">/100</span></div></td>
+            <td class="py-3 px-4 font-semibold text-slate-500 max-w-[160px] truncate">${e.task}</td>
+            <td class="py-3 px-4"><span class="stat-chip ${e.pending>3?'bg-red-50 text-red-600':'bg-slate-100 text-slate-600'}">${e.pending} tasks</span></td>
+            <td class="py-3 px-4 font-semibold text-slate-500">${e.events} joined</td>
+            <td class="py-3 px-4 font-black text-[#0F3C2C]">${e.xp.toLocaleString()}</td>
+            <td class="py-3 px-4"><span class="stat-chip ${e.perf==='Outstanding'?'bg-purple-50 text-purple-700':e.perf==='Needs Improvement'?'bg-red-50 text-red-600':'bg-emerald-50 text-emerald-700'}">${e.perf}</span></td>
+          </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>
+  </div>`;
+}
+
+function buildMgrTasks() {
+  const el = document.getElementById('page-mgr-tasks');
+  const cols = [
+    { label:'📋 To Do', color:'bg-slate-100', tasks: EMP_TASKS.filter(t=>t.progress===0) },
+    { label:'🔄 In Progress', color:'bg-blue-50', tasks: EMP_TASKS.filter(t=>t.progress>0&&t.progress<100) },
+    { label:'✅ Done', color:'bg-emerald-50', tasks: EMP_TASKS.filter(t=>t.progress===100) },
+  ];
+  el.innerHTML = `
+  <div class="flex justify-between items-center">
+    ${sectionTitle('fa-kanban','Task Management — Kanban Board')}
+    <button class="bg-[#0F3C2C] text-white font-bold text-xs px-4 py-2 rounded-xl hover:bg-[#09291D] transition-all"><i class="fa fa-plus mr-1"></i> Assign Task</button>
+  </div>
+  <div class="grid grid-cols-3 gap-6">
+    ${cols.map(col=>`<div class="${col.color} p-4 rounded-2xl space-y-3 kanban-col">
+      <h4 class="text-xs font-black text-slate-800 uppercase tracking-wider">${col.label} <span class="text-slate-400">(${col.tasks.length})</span></h4>
+      ${col.tasks.map(t=>`<div class="bg-white p-3.5 rounded-xl border shadow-sm space-y-2">
+        <h5 class="font-bold text-xs text-slate-800">${t.name}</h5>
+        <div class="flex justify-between">${priorityBadge(t.priority)}<span class="text-[10px] text-slate-400 font-semibold">${t.deadline}</span></div>
+        ${progressBar(t.progress)}
+        <div class="flex justify-between text-[9px] font-semibold text-slate-400">
+          <span>Assigned to: Elena R.</span><span>${t.progress}%</span>
+        </div>
+      </div>`).join('')}
+      ${col.tasks.length===0?`<div class="text-center py-6 text-slate-300 text-xs font-semibold">Drop tasks here</div>`:''}
+    </div>`).join('')}
+  </div>`;
+}
+
+function buildMgrEvents() {
+  const el = document.getElementById('page-mgr-events');
+  el.innerHTML = `
+  <div class="flex justify-between items-center">
+    ${sectionTitle('fa-calendar-check','CSR Event Management')}
+    <button class="bg-[#0F3C2C] text-white font-bold text-xs px-4 py-2 rounded-xl hover:bg-[#09291D] transition-all"><i class="fa fa-plus mr-1"></i> Create Event</button>
+  </div>
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+    ${CSR_EVENTS.map(e=>`<div class="card overflow-hidden">
+      <img src="${e.img}" class="w-full h-40 object-cover">
+      <div class="p-5 space-y-3">
+        <h4 class="font-bold text-slate-800">${e.name}</h4>
+        <div class="flex flex-wrap gap-2 text-[10px] font-semibold text-slate-400">
+          <span><i class="fa fa-calendar mr-1"></i>${e.date} ${e.time}</span>
+          <span><i class="fa fa-map-marker mr-1"></i>${e.venue}</span>
+        </div>
+        <div class="flex justify-between items-center">
+          <div class="space-y-1 flex-1 mr-4">
+            <div class="flex justify-between text-[10px] font-bold text-slate-500">
+              <span>Registrations</span><span>${e.participants}/${e.participants+e.slots}</span>
+            </div>
+            ${progressBar(Math.round(e.participants/(e.participants+e.slots)*100))}
+          </div>
+          <button class="bg-[#0F3C2C] text-white text-[10px] font-black px-3 py-1.5 rounded-lg hover:bg-[#09291D] transition-all">Approve</button>
+        </div>
+      </div>
+    </div>`).join('')}
+  </div>`;
+}
+
+function buildMgrRewards() {
+  const el = document.getElementById('page-mgr-rewards');
+  el.innerHTML = `
+  <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+    ${kpiCard('fa-trophy','Best Performer','Priya Nair','88/100 ESG','text-amber-600')}
+    ${kpiCard('fa-leaf','Top Carbon Saver','Marcus Thorne','-12.5% MoM','text-emerald-600')}
+    ${kpiCard('fa-star','Promotions','1','Recommended','text-purple-600')}
+    ${kpiCard('fa-gift','Total Bonuses','$1,240','This Quarter','text-blue-600')}
+  </div>
+  <div class="card p-6">
+    ${sectionTitle('fa-star','Reward & Promotion Calculator')}
+    <p class="text-xs text-slate-400 mb-4">AI-powered calculations based on ESG Score, Attendance, XP, and Task Completion.</p>
+    <div class="overflow-x-auto">
+      <table class="w-full text-xs border-collapse">
+        <thead><tr class="bg-slate-50 text-slate-400 font-bold uppercase text-[9px] tracking-wider">
+          <th class="py-3 px-4 text-left rounded-l-xl">Employee</th>
+          <th class="py-3 px-4 text-left">ESG Score</th>
+          <th class="py-3 px-4 text-left">Attendance</th>
+          <th class="py-3 px-4 text-left">XP</th>
+          <th class="py-3 px-4 text-left">ESG Bonus</th>
+          <th class="py-3 px-4 text-left">CSR Bonus</th>
+          <th class="py-3 px-4 text-left">Recommendation</th>
+          <th class="py-3 px-4 text-left rounded-r-xl">Action</th>
+        </tr></thead>
+        <tbody>
+          ${DEPT_EMPLOYEES.map(e=>{
+            const esgBonus = Math.round(e.esg*0.5);
+            const csrBonus = e.events * 25;
+            const rec = e.perf==='Outstanding'?'Promote 🚀':e.perf==='Needs Improvement'?'Coaching ⚠️':'Stable ✅';
+            return `<tr class="border-b border-slate-50 hover:bg-slate-50/50">
+              <td class="py-3 px-4"><div class="flex items-center gap-2">
+                <img src="${e.avatar}" class="w-7 h-7 rounded-lg object-cover">
+                <span class="font-bold text-slate-800">${e.name}</span>
+              </div></td>
+              <td class="py-3 px-4 font-black ${e.esg>=80?'text-emerald-600':e.esg>=70?'text-amber-600':'text-red-600'}">${e.esg}/100</td>
+              <td class="py-3 px-4 font-bold text-slate-700">${e.att}</td>
+              <td class="py-3 px-4 font-bold text-[#0F3C2C]">${e.xp.toLocaleString()}</td>
+              <td class="py-3 px-4 font-black text-emerald-700">$${esgBonus}</td>
+              <td class="py-3 px-4 font-black text-blue-700">$${csrBonus}</td>
+              <td class="py-3 px-4"><span class="stat-chip ${e.perf==='Outstanding'?'bg-purple-50 text-purple-700':e.perf==='Needs Improvement'?'bg-red-50 text-red-600':'bg-emerald-50 text-emerald-700'}">${rec}</span></td>
+              <td class="py-3 px-4"><button class="border border-slate-200 text-slate-600 font-bold text-[10px] px-2.5 py-1 rounded-lg hover:bg-slate-50">Approve</button></td>
+            </tr>`;
+          }).join('')}
+        </tbody>
+      </table>
+    </div>
+  </div>`;
+}
+
+function buildMgrAnalytics() {
+  const el = document.getElementById('page-mgr-analytics');
+  el.innerHTML = `
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <div class="card p-6"><h4 class="text-xs font-black text-slate-800 uppercase tracking-wider mb-4">📊 ESG Score Trend</h4><canvas id="mgr-esg-chart" height="180"></canvas></div>
+    <div class="card p-6"><h4 class="text-xs font-black text-slate-800 uppercase tracking-wider mb-4">📅 Attendance Trend</h4><canvas id="mgr-att-chart" height="180"></canvas></div>
+    <div class="card p-6"><h4 class="text-xs font-black text-slate-800 uppercase tracking-wider mb-4">✅ Task Completion</h4><canvas id="mgr-task-chart" height="180"></canvas></div>
+    <div class="card p-6"><h4 class="text-xs font-black text-slate-800 uppercase tracking-wider mb-4">🌳 CSR Participation</h4><canvas id="mgr-csr-chart" height="180"></canvas></div>
+  </div>`;
+  setTimeout(()=>{
+    new Chart(document.getElementById('mgr-esg-chart'),{type:'bar',data:{labels:DEPT_EMPLOYEES.map(e=>e.name.split(' ')[0]),datasets:[{label:'ESG Score',data:DEPT_EMPLOYEES.map(e=>e.esg),backgroundColor:['#0F3C2C','#10b981','#3b82f6','#f59e0b']}]},options:{plugins:{legend:{display:false}}}});
+    new Chart(document.getElementById('mgr-att-chart'),{type:'line',data:{labels:['May','Jun','Jul','Aug','Sep','Oct'],datasets:[{label:'Avg Attendance %',data:[90,91,93,92,94,94.2],borderColor:'#0F3C2C',fill:true,backgroundColor:'rgba(15,60,44,0.07)',tension:.4}]},options:{plugins:{legend:{display:false}}}});
+    new Chart(document.getElementById('mgr-task-chart'),{type:'doughnut',data:{labels:['Completed','In Progress','Overdue'],datasets:[{data:[1,3,0],backgroundColor:['#10b981','#3b82f6','#ef4444']}]},options:{plugins:{legend:{position:'bottom',labels:{font:{size:10}}}}}});
+    new Chart(document.getElementById('mgr-csr-chart'),{type:'bar',data:{labels:DEPT_EMPLOYEES.map(e=>e.name.split(' ')[0]),datasets:[{label:'Events Joined',data:DEPT_EMPLOYEES.map(e=>e.events),backgroundColor:'#10b981'}]},options:{plugins:{legend:{display:false}}}});
+  },100);
+}
+
+// =========================================================
+// ADMIN PAGES
+// =========================================================
+function buildAdmDashboard() {
+  const el = document.getElementById('page-adm-dashboard');
+  el.innerHTML = `
+  <!-- KPIs Row -->
+  <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
+    ${kpiCard('fa-users','Total Employees',296,'Across all sectors','text-slate-800')}
+    ${kpiCard('fa-briefcase','Total Managers',42,'→ Target 50','text-blue-600')}
+    ${kpiCard('fa-building','Departments',12,'Active','text-slate-800')}
+    ${kpiCard('fa-leaf','Overall ESG','82.4','↑ +2.4 QoQ','text-[#0F3C2C]')}
+    ${kpiCard('fa-cloud','Carbon (MT)','1,248','↓ -14% YTD','text-red-600')}
+  </div>
+  <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
+    ${kpiCard('fa-calendar','CSR Activities',24,'This Month','text-emerald-600')}
+    ${kpiCard('fa-file-shield','Active Policies',18,'96.8% Compliance','text-amber-600')}
+    ${kpiCard('fa-chart-line','Productivity','87%','Organization-wide','text-blue-600')}
+    ${kpiCard('fa-star','Rewards Given',142,'This Quarter','text-purple-600')}
+    ${kpiCard('fa-droplet','Sustainability Goal','74%','Progress','text-cyan-600')}
+  </div>
+
+  <!-- Main command row -->
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <!-- Critical Alerts -->
+    <div class="card p-6 space-y-3">
+      <div class="flex justify-between items-center">
+        <h4 class="text-xs font-black text-slate-800 uppercase tracking-widest">🚨 Critical Alerts</h4>
+        <span class="stat-chip bg-red-100 text-red-700">${ADMIN_ALERTS.filter(a=>a.type==='critical').length} CRITICAL</span>
+      </div>
+      ${ADMIN_ALERTS.slice(0,4).map(a=>alertCard(a)).join('')}
+      <button onclick="navigateTo('adm-alerts')" class="w-full text-center text-xs font-bold text-[#0F3C2C] hover:underline">View All Alerts →</button>
+    </div>
+
+    <!-- AI Executive Insights -->
+    <div class="card p-6 lg:col-span-2 space-y-4">
+      <h4 class="text-xs font-black text-slate-800 uppercase tracking-widest"><i class="fa fa-magic text-[#0F3C2C] mr-1.5"></i> AI Executive Insights</h4>
+      <div class="grid grid-cols-2 gap-4">
+        <div class="bg-emerald-50 border border-emerald-100 p-4 rounded-xl space-y-2">
+          <span class="text-[9px] font-black text-emerald-700 uppercase tracking-widest">Optimization Opportunity</span>
+          <p class="text-xs font-semibold text-slate-700">Switch to Tier 4 Cloud Regions in 'Ops' to reduce emissions by 12% ($45k annual saving).</p>
+          <div class="flex gap-2"><button class="bg-[#0F3C2C] text-white text-[9px] font-black px-2.5 py-1.5 rounded-lg">Apply Now</button><a href="#" class="text-[9px] font-bold text-slate-400 flex items-center">Details</a></div>
+        </div>
+        <div class="bg-blue-50 border border-blue-100 p-4 rounded-xl space-y-2">
+          <span class="text-[9px] font-black text-blue-700 uppercase tracking-widest">Performance Spotlight</span>
+          <p class="text-xs font-semibold text-slate-700">Priya Nair (IT) achieved -22% waste target. Suggest carbon credit promotion.</p>
+          <div class="w-full h-1.5 bg-slate-200 rounded-full"><div class="h-full bg-blue-500" style="width:85%"></div></div>
+          <small class="text-[9px] text-slate-400">Carbon Credit Eligibility: 85%</small>
+        </div>
+        <div class="bg-amber-50 border border-amber-100 p-4 rounded-xl space-y-2">
+          <span class="text-[9px] font-black text-amber-700 uppercase tracking-widest">Carbon Risk</span>
+          <p class="text-xs font-semibold text-slate-700">Global Operations at 114% quota. Immediate cross-sector intervention needed.</p>
+          <button class="bg-amber-600 text-white text-[9px] font-black px-2.5 py-1.5 rounded-lg w-full">Escalate Alert</button>
+        </div>
+        <div class="bg-purple-50 border border-purple-100 p-4 rounded-xl space-y-2">
+          <span class="text-[9px] font-black text-purple-700 uppercase tracking-widest">Governance</span>
+          <p class="text-xs font-semibold text-slate-700">ISO 14001 certification expiring in 14 days. Initiate renewal workflow now.</p>
+          <button class="bg-purple-600 text-white text-[9px] font-black px-2.5 py-1.5 rounded-lg w-full">Begin Renewal</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Sector Performance Table -->
+  <div class="card p-6">
+    <div class="flex justify-between items-center mb-4">
+      ${sectionTitle('fa-industry','Global Sector Performance')}
+      <button onclick="navigateTo('adm-sectors')" class="text-[10px] font-bold text-[#0F3C2C] hover:underline">View All Sectors →</button>
+    </div>
+    <table class="w-full text-xs border-collapse">
+      <thead><tr class="bg-slate-50 text-slate-400 font-bold uppercase text-[9px] tracking-wider">
+        <th class="py-3 px-4 text-left rounded-l-xl">Sector</th>
+        <th class="py-3 px-4 text-left">Sector Head</th>
+        <th class="py-3 px-4 text-left">Employees</th>
+        <th class="py-3 px-4 text-left">ESG Rating</th>
+        <th class="py-3 px-4 text-left">Carbon (MT)</th>
+        <th class="py-3 px-4 text-left">Status</th>
+        <th class="py-3 px-4 text-left rounded-r-xl">Actions</th>
+      </tr></thead>
+      <tbody>
+        ${SECTORS.map(s=>`<tr class="border-b border-slate-50 hover:bg-slate-50/50 cursor-pointer" onclick="navigateTo('adm-sectors')">
+          <td class="py-3 px-4 font-bold text-slate-800">${s.name}</td>
+          <td class="py-3 px-4 text-slate-500 font-semibold">${s.head}</td>
+          <td class="py-3 px-4 font-bold text-slate-700">${s.employees}</td>
+          <td class="py-3 px-4"><span class="stat-chip ${s.color==='emerald'?'bg-emerald-50 text-emerald-700':'bg-red-50 text-red-700'} border ${s.color==='emerald'?'border-emerald-100':'border-red-100'}">${s.esg}</span></td>
+          <td class="py-3 px-4 font-bold ${s.carbon>300?'text-red-600':'text-slate-700'}">${s.carbon}</td>
+          <td class="py-3 px-4"><span class="stat-chip ${s.status==='Optimized'||s.status==='Elite'?'bg-emerald-50 text-emerald-700':s.status==='Warning'?'bg-red-50 text-red-700':'bg-blue-50 text-blue-700'}">${s.status}</span></td>
+          <td class="py-3 px-4"><button class="border border-slate-200 text-slate-600 font-bold text-[9px] px-2 py-1 rounded-lg hover:bg-slate-50">View Details</button></td>
+        </tr>`).join('')}
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Leaderboard + Report Generator -->
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <div class="card p-6 space-y-3">
+      ${sectionTitle('fa-trophy','Top ESG Departments')}
+      ${[{n:'Sustainability R&D',s:98.2},{n:'IT Operations',s:88.0},{n:'EMEA Sales',s:82.4},{n:'Human Resources',s:80.1},{n:'HQ Facilities',s:79.1}].map((d,i)=>`
+      <div class="flex items-center gap-3 p-2.5 hover:bg-slate-50 rounded-xl transition-all">
+        <span class="w-7 h-7 rounded-full flex items-center justify-center font-black text-sm ${i===0?'bg-amber-100 text-amber-600':i===1?'bg-slate-200 text-slate-600':'bg-slate-100 text-slate-500'}">${i+1}</span>
+        <div class="flex-1"><p class="text-xs font-bold text-slate-800">${d.n}</p>${progressBar(d.s,'bg-emerald-500')}</div>
+        <span class="font-black text-[#0F3C2C] text-sm">${d.s}</span>
+      </div>`).join('')}
+    </div>
+    <div class="card p-6 space-y-4">
+      ${sectionTitle('fa-file-chart-pie','Quick Report Generator')}
+      <p class="text-xs text-slate-400">Generate stakeholder-ready ESG disclosure documents instantly.</p>
+      <div class="space-y-2">
+        ${['Environmental Report','Social Scorecard','Governance Audit','Full ESG Summary','AI Insights Report'].map(r=>`
+        <button onclick="alert('Generating: ${r}...')" class="w-full flex items-center justify-between p-3 bg-slate-50 hover:bg-emerald-50 border hover:border-emerald-200 rounded-xl transition-all group">
+          <span class="text-xs font-bold text-slate-700 group-hover:text-[#0F3C2C]">${r}</span>
+          <div class="flex gap-1.5">
+            <span class="stat-chip bg-slate-200 text-slate-600 group-hover:bg-emerald-100 group-hover:text-emerald-700">PDF</span>
+            <span class="stat-chip bg-slate-200 text-slate-600 group-hover:bg-emerald-100 group-hover:text-emerald-700">Excel</span>
+          </div>
+        </button>`).join('')}
+      </div>
+    </div>
+  </div>`;
+}
+
+function buildAdmSectors() {
+  const el = document.getElementById('page-adm-sectors');
+  el.innerHTML = `
+  <div class="flex justify-between items-center">
+    ${sectionTitle('fa-industry','Sector Management')}
+    <button class="bg-[#0F3C2C] text-white font-bold text-xs px-4 py-2 rounded-xl hover:bg-[#09291D]"><i class="fa fa-plus mr-1"></i> Add Sector</button>
+  </div>
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    ${SECTORS.map(s=>`<div class="card p-6 space-y-4 hover:-translate-y-1 transition-transform cursor-pointer">
+      <div class="flex justify-between items-start">
+        <div>
+          <h4 class="font-bold text-slate-800">${s.name}</h4>
+          <p class="text-[10px] text-slate-400 font-semibold mt-0.5">${s.head} · Sector Head</p>
+        </div>
+        <span class="stat-chip ${s.color==='emerald'?'bg-emerald-50 text-emerald-700':'bg-red-50 text-red-700'} border ${s.color==='emerald'?'border-emerald-100':'border-red-100'} text-sm font-black">${s.esg}</span>
+      </div>
+      <div class="grid grid-cols-2 gap-2 text-xs">
+        <div class="bg-slate-50 rounded-xl p-2.5"><span class="text-slate-400 block text-[9px] font-bold uppercase">Employees</span><span class="font-black text-slate-800">${s.employees}</span></div>
+        <div class="bg-slate-50 rounded-xl p-2.5"><span class="text-slate-400 block text-[9px] font-bold uppercase">Teams</span><span class="font-black text-slate-800">${s.teams}</span></div>
+        <div class="bg-slate-50 rounded-xl p-2.5"><span class="text-slate-400 block text-[9px] font-bold uppercase">Carbon (MT)</span><span class="font-black ${s.carbon>300?'text-red-600':'text-slate-800'}">${s.carbon}</span></div>
+        <div class="bg-slate-50 rounded-xl p-2.5"><span class="text-slate-400 block text-[9px] font-bold uppercase">Status</span><span class="font-black ${s.color==='emerald'?'text-emerald-700':'text-red-700'}">${s.status}</span></div>
+      </div>
+      <div class="border-t pt-3 flex gap-2">
+        <button class="flex-1 border border-slate-200 text-slate-600 font-bold text-[10px] py-1.5 rounded-lg hover:bg-slate-50">View Employees</button>
+        <button class="flex-1 border border-slate-200 text-slate-600 font-bold text-[10px] py-1.5 rounded-lg hover:bg-slate-50">View ESG</button>
+        <button class="flex-1 border border-slate-200 text-slate-600 font-bold text-[10px] py-1.5 rounded-lg hover:bg-slate-50">Analytics</button>
+      </div>
+    </div>`).join('')}
+  </div>`;
+}
+
+function buildAdmEmployees() {
+  const el = document.getElementById('page-adm-employees');
+  el.innerHTML = `
+  <div class="card p-6">
+    <div class="flex justify-between items-center mb-5">
+      ${sectionTitle('fa-users','Organization Employee Overview')}
+      <div class="flex gap-2 flex-wrap">
+        <select class="border border-slate-200 rounded-xl px-3 py-2 text-xs focus:outline-none"><option>All Departments</option><option>IT Operations</option><option>Sales & Logistics</option></select>
+        <select class="border border-slate-200 rounded-xl px-3 py-2 text-xs focus:outline-none"><option>All Sectors</option>${SECTORS.map(s=>`<option>${s.name}</option>`).join('')}</select>
+        <select class="border border-slate-200 rounded-xl px-3 py-2 text-xs focus:outline-none"><option>All ESG</option><option>80-100</option><option>60-79</option><option>Below 60</option></select>
+      </div>
+    </div>
+    <div class="overflow-x-auto">
+      <table class="w-full text-xs border-collapse">
+        <thead><tr class="bg-slate-50 text-slate-400 font-bold uppercase text-[9px] tracking-wider">
+          <th class="py-3 px-4 text-left rounded-l-xl">Employee</th>
+          <th class="py-3 px-4 text-left">Department/Sector</th>
+          <th class="py-3 px-4 text-left">Attendance</th>
+          <th class="py-3 px-4 text-left">ESG Score</th>
+          <th class="py-3 px-4 text-left">XP</th>
+          <th class="py-3 px-4 text-left">Performance</th>
+          <th class="py-3 px-4 text-left rounded-r-xl">Actions</th>
+        </tr></thead>
+        <tbody>
+          ${DEPT_EMPLOYEES.map(e=>`<tr class="border-b border-slate-50 hover:bg-slate-50/50">
+            <td class="py-3 px-4"><div class="flex items-center gap-2">
+              <img src="${e.avatar}" class="w-8 h-8 rounded-xl object-cover">
+              <div><p class="font-bold text-slate-800">${e.name}</p><p class="text-[9px] text-slate-400 font-semibold">${e.id}</p></div>
+            </div></td>
+            <td class="py-3 px-4 font-semibold text-slate-500">IT Operations / IT</td>
+            <td class="py-3 px-4 font-bold ${parseFloat(e.att)>90?'text-emerald-600':'text-red-600'}">${e.att}</td>
+            <td class="py-3 px-4"><div class="flex items-center gap-2"><div class="w-12">${progressBar(e.esg)}</div><span class="font-black text-slate-800">${e.esg}</span></div></td>
+            <td class="py-3 px-4 font-black text-[#0F3C2C]">${e.xp.toLocaleString()}</td>
+            <td class="py-3 px-4"><span class="stat-chip ${e.perf==='Outstanding'?'bg-purple-50 text-purple-700':e.perf==='Needs Improvement'?'bg-red-50 text-red-600':'bg-emerald-50 text-emerald-700'}">${e.perf}</span></td>
+            <td class="py-3 px-4 flex gap-1">
+              <button class="border border-slate-200 text-slate-600 font-bold text-[9px] px-2 py-1 rounded-lg hover:bg-slate-50">View</button>
+              <button class="border border-slate-200 text-slate-600 font-bold text-[9px] px-2 py-1 rounded-lg hover:bg-slate-50">Edit</button>
+            </td>
+          </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>
+  </div>`;
+}
+
+function buildAdmAnalytics() {
+  const el = document.getElementById('page-adm-analytics');
+  el.innerHTML = `
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <div class="card p-6"><h4 class="text-xs font-black text-slate-800 uppercase tracking-wider mb-4">📈 ESG Score Trend (12 Months)</h4><canvas id="adm-esg-trend" height="180"></canvas></div>
+    <div class="card p-6"><h4 class="text-xs font-black text-slate-800 uppercase tracking-wider mb-4">🏭 Carbon Emission by Sector</h4><canvas id="adm-carbon-chart" height="180"></canvas></div>
+    <div class="card p-6"><h4 class="text-xs font-black text-slate-800 uppercase tracking-wider mb-4">📅 Attendance Trend</h4><canvas id="adm-att-trend" height="180"></canvas></div>
+    <div class="card p-6"><h4 class="text-xs font-black text-slate-800 uppercase tracking-wider mb-4">🌳 CSR Participation</h4><canvas id="adm-csr-trend" height="180"></canvas></div>
+    <div class="card p-6"><h4 class="text-xs font-black text-slate-800 uppercase tracking-wider mb-4">🏢 Department ESG Comparison</h4><canvas id="adm-dept-chart" height="180"></canvas></div>
+    <div class="card p-6"><h4 class="text-xs font-black text-slate-800 uppercase tracking-wider mb-4">🏆 Rewards Distribution</h4><canvas id="adm-reward-chart" height="180"></canvas></div>
+  </div>`;
+  setTimeout(()=>{
+    const months=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    new Chart(document.getElementById('adm-esg-trend'),{type:'line',data:{labels:months,datasets:[{label:'ESG Score',data:[74,75,76,77,77,78,79,79,80,81,82,82.4],borderColor:'#0F3C2C',fill:true,backgroundColor:'rgba(15,60,44,0.08)',tension:.4}]},options:{plugins:{legend:{display:false}},scales:{y:{min:60,max:100}}}});
+    new Chart(document.getElementById('adm-carbon-chart'),{type:'bar',data:{labels:SECTORS.map(s=>s.name.split(' ')[0]),datasets:[{label:'Carbon MT',data:SECTORS.map(s=>s.carbon),backgroundColor:SECTORS.map(s=>s.carbon>300?'#ef4444':'#10b981')}]},options:{plugins:{legend:{display:false}}}});
+    new Chart(document.getElementById('adm-att-trend'),{type:'line',data:{labels:months.slice(0,6),datasets:[{label:'Attendance %',data:[88,89,90,91,93,94.2],borderColor:'#3b82f6',fill:true,backgroundColor:'rgba(59,130,246,0.08)',tension:.4}]},options:{plugins:{legend:{display:false}}}});
+    new Chart(document.getElementById('adm-csr-trend'),{type:'bar',data:{labels:months.slice(0,6),datasets:[{label:'Participants',data:[45,52,60,55,68,78],backgroundColor:'#10b981'}]},options:{plugins:{legend:{display:false}}}});
+    new Chart(document.getElementById('adm-dept-chart'),{type:'bar',data:{labels:['IT Ops','Global Ops','Sales','HR','Finance','R&D'],datasets:[{label:'ESG Score',data:[88,54,71,82,78,85],backgroundColor:'rgba(15,60,44,0.8)'}]},options:{plugins:{legend:{display:false}},scales:{y:{min:0,max:100}}}});
+    new Chart(document.getElementById('adm-reward-chart'),{type:'doughnut',data:{labels:['ESG Bonus','CSR Bonus','Performance Bonus','Other'],datasets:[{data:[35,25,30,10],backgroundColor:['#0F3C2C','#10b981','#3b82f6','#f59e0b']}]},options:{plugins:{legend:{position:'bottom',labels:{font:{size:10}}}}}});
+  },100);
+}
+
+function buildAdmAlerts() {
+  const el = document.getElementById('page-adm-alerts');
+  el.innerHTML = `
+  <div class="flex justify-between items-center">
+    ${sectionTitle('fa-bell','Organization Alert Center')}
+    <div class="flex gap-2 text-xs font-bold text-slate-500">
+      <span class="stat-chip bg-red-100 text-red-700">${ADMIN_ALERTS.filter(a=>a.type==='critical').length} Critical</span>
+      <span class="stat-chip bg-amber-100 text-amber-700">${ADMIN_ALERTS.filter(a=>a.type==='warning').length} Warning</span>
+      <span class="stat-chip bg-emerald-100 text-emerald-700">${ADMIN_ALERTS.filter(a=>a.type==='success').length} Resolved</span>
+    </div>
+  </div>
+  <div class="space-y-3">
+    ${ADMIN_ALERTS.map(a=>`<div class="card p-5 ${a.type==='critical'?'alert-critical':a.type==='warning'?'alert-warning':a.type==='info'?'alert-info':'alert-success'}">
+      <div class="flex justify-between items-start">
+        <div class="flex items-start gap-3">
+          <span class="text-2xl">${a.icon}</span>
+          <div>
+            <h5 class="font-bold text-slate-800">${a.title}</h5>
+            <p class="text-xs text-slate-500 mt-1">${a.msg}</p>
+          </div>
+        </div>
+        <div class="flex items-center gap-2 shrink-0 ml-4">
+          <small class="text-[10px] text-slate-400">${a.time}</small>
+          <button class="border border-slate-200 text-slate-600 font-bold text-[9px] px-2 py-1 rounded-lg hover:bg-slate-50">Resolve</button>
+          <button class="border border-slate-200 text-slate-600 font-bold text-[9px] px-2 py-1 rounded-lg hover:bg-slate-50">Details</button>
+        </div>
+      </div>
+    </div>`).join('')}
+  </div>`;
+}
+
+function buildAdmLeaderboard() {
+  const el = document.getElementById('page-adm-leaderboard');
+  el.innerHTML = `
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <div class="card p-6 space-y-3">
+      ${sectionTitle('fa-user-star','Top Employees — XP')}
+      ${DEPT_EMPLOYEES.sort((a,b)=>b.xp-a.xp).map((e,i)=>`<div class="leaderboard-row flex items-center gap-3 p-3 rounded-xl transition-all">
+        <span class="w-9 h-9 flex items-center justify-center font-black text-base rounded-full ${i===0?'bg-amber-100 text-amber-600':i===1?'bg-slate-200 text-slate-600':i===2?'bg-orange-100 text-orange-600':'bg-slate-100 text-slate-400'}">${i===0?'🥇':i===1?'🥈':i===2?'🥉':i+1}</span>
+        <img src="${e.avatar}" class="w-9 h-9 rounded-xl object-cover">
+        <div class="flex-1">
+          <p class="text-xs font-bold text-slate-800">${e.name}</p>
+          <p class="text-[9px] text-slate-400 font-semibold">${e.team}</p>
+        </div>
+        <div class="text-right">
+          <p class="font-black text-[#0F3C2C]">${e.xp.toLocaleString()} XP</p>
+          <p class="text-[9px] text-slate-400 font-semibold">ESG: ${e.esg}/100</p>
+        </div>
+      </div>`).join('')}
+    </div>
+    <div class="card p-6 space-y-3">
+      ${sectionTitle('fa-industry','Top Sectors — ESG')}
+      ${SECTORS.map((s,i)=>`<div class="leaderboard-row flex items-center gap-3 p-3 rounded-xl transition-all">
+        <span class="w-9 h-9 flex items-center justify-center font-black text-sm rounded-full ${i===0?'bg-amber-100 text-amber-600':i===1?'bg-slate-200 text-slate-600':i===2?'bg-orange-100 text-orange-600':'bg-slate-100 text-slate-400'}">${i+1}</span>
+        <div class="flex-1">
+          <p class="text-xs font-bold text-slate-800">${s.name}</p>
+          <p class="text-[9px] text-slate-400 font-semibold">${s.head}</p>
+          ${progressBar(s.esg==='AAA'?95:s.esg==='AA+'?88:s.esg==='AA'?85:s.esg==='A'?78:s.esg==='B+'?72:s.esg==='C'?40:50)}
+        </div>
+        <span class="stat-chip ${s.color==='emerald'?'bg-emerald-50 text-emerald-700':'bg-red-50 text-red-700'} font-black">${s.esg}</span>
+      </div>`).join('')}
+    </div>
+  </div>`;
+}
+
+function buildAdmReports() {
+  const el = document.getElementById('page-adm-reports');
+  const reports = [
+    { cat:'Environmental', icon:'🌱', items:['Environmental Report','Carbon Emission Report','Water Usage Report','Waste Management Report'] },
+    { cat:'Social', icon:'🤝', items:['Social Scorecard','CSR Activity Report','Diversity & Inclusion Report','Volunteer Hours Report'] },
+    { cat:'Governance', icon:'⚖️', items:['Governance Audit Report','Policy Compliance Report','Risk Assessment Report','Audit Trail Report'] },
+    { cat:'HR & Workforce', icon:'👥', items:['Employee Attendance Report','Salary & Bonus Report','Performance Report','Rewards Distribution'] },
+    { cat:'ESG Summary', icon:'📊', items:['Full ESG Summary','AI Insights Report','Quarterly ESG Dashboard','Board Presentation Pack'] },
+  ];
+  el.innerHTML = `
+  ${sectionTitle('fa-file-chart-pie','Report Generator — Organization')}
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    ${reports.map(r=>`<div class="card p-5 space-y-4">
+      <h4 class="font-black text-slate-800 flex items-center gap-2"><span>${r.icon}</span> ${r.cat}</h4>
+      <div class="space-y-2">
+        ${r.items.map(item=>`<div class="flex items-center justify-between p-3 bg-slate-50 rounded-xl hover:bg-emerald-50 transition-all group cursor-pointer" onclick="alert('Generating ${item}...')">
+          <span class="text-xs font-semibold text-slate-700 group-hover:text-[#0F3C2C]">${item}</span>
+          <div class="flex gap-1.5">
+            <span class="stat-chip bg-slate-200 text-slate-600 group-hover:bg-emerald-100 group-hover:text-emerald-700">PDF</span>
+            <span class="stat-chip bg-slate-200 text-slate-600 group-hover:bg-emerald-100 group-hover:text-emerald-700">CSV</span>
+          </div>
+        </div>`).join('')}
+      </div>
+    </div>`).join('')}
+  </div>`;
+}
+
+function buildAdmSettings() {
+  const el = document.getElementById('page-adm-settings');
+  el.innerHTML = `
+  ${sectionTitle('fa-gear','System Settings')}
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <!-- ESG Weights -->
+    <div class="card p-6 space-y-4">
+      <h4 class="text-xs font-black text-slate-800 uppercase tracking-widest">⚖️ ESG Score Weightage</h4>
+      ${[['Environmental','E','33'],['Social','S','33'],['Governance','G','34']].map(([name,code,val])=>`
+      <div>
+        <div class="flex justify-between text-xs font-bold mb-1"><span>${name}</span><span id="w-${code}" class="text-[#0F3C2C]">${val}%</span></div>
+        <input type="range" min="1" max="70" value="${val}" class="w-full" oninput="document.getElementById('w-${code}').textContent=this.value+'%'">
+      </div>`).join('')}
+      <button onclick="alert('Weights saved and scores recomputed!')" class="w-full bg-[#0F3C2C] text-white font-bold text-xs py-2.5 rounded-xl hover:bg-[#09291D] transition-all">Save & Recompute Scores</button>
+    </div>
+    <!-- Carbon Factors -->
+    <div class="card p-6 space-y-4">
+      <h4 class="text-xs font-black text-slate-800 uppercase tracking-widest">🏭 Carbon Factors</h4>
+      ${[['Electricity (per kWh)','0.82 kg CO₂'],['Business Travel (per km)','0.21 kg CO₂'],['Water (per L)','0.001 kg CO₂'],['Paper (per kg)','1.84 kg CO₂']].map(([label,val])=>`
+      <div class="flex justify-between items-center p-3 bg-slate-50 rounded-xl">
+        <span class="text-xs font-semibold text-slate-700">${label}</span>
+        <span class="text-xs font-black text-[#0F3C2C]">${val}</span>
+      </div>`).join('')}
+      <button onclick="alert('Carbon factors updated!')" class="w-full border border-slate-200 text-slate-600 font-bold text-xs py-2.5 rounded-xl hover:bg-slate-50 transition-all">Update Factors</button>
+    </div>
+    <!-- System Config -->
+    <div class="card p-6 space-y-4">
+      <h4 class="text-xs font-black text-slate-800 uppercase tracking-widest">⚙️ System Configuration</h4>
+      ${[['AI Model','llama-3.1-8b-instant'],['Data Refresh Rate','15 min'],['Alert Threshold','ESG < 70'],['Backup Schedule','Daily 2:00 AM']].map(([label,val])=>`
+      <div class="flex justify-between items-center p-3 bg-slate-50 rounded-xl">
+        <span class="text-xs font-semibold text-slate-700">${label}</span>
+        <span class="text-xs font-black text-slate-800">${val}</span>
+      </div>`).join('')}
+      <div class="flex gap-2">
+        <button onclick="alert('Settings saved!')" class="flex-1 bg-[#0F3C2C] text-white font-bold text-xs py-2.5 rounded-xl hover:bg-[#09291D] transition-all">Save</button>
+        <button onclick="alert('Backup started!')" class="flex-1 border border-slate-200 text-slate-600 font-bold text-xs py-2.5 rounded-xl hover:bg-slate-50 transition-all">Backup Now</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+// =========================================================
+// NOTIFICATIONS
+// =========================================================
+const NOTIFICATIONS_DATA = {
+  employee: [
+    { icon:'🌱', msg:'New CSR Event: Coastal Cleanup Day available', time:'2 min ago', unread:true },
+    { icon:'✅', msg:'Task "ESG Data Audit Q4" updated to 75%', time:'1 hr ago', unread:true },
+    { icon:'🏆', msg:'Challenge "Zero Waste Week" is 70% complete!', time:'3 hr ago', unread:false },
+    { icon:'📜', msg:'New policy pending your acknowledgment', time:'1 day ago', unread:true },
+  ],
+  manager: [
+    { icon:'⚠️', msg:'James Kowalski attendance dropped below 87%', time:'30 min ago', unread:true },
+    { icon:'📋', msg:'3 overdue tasks in your department', time:'1 hr ago', unread:true },
+    { icon:'🌳', msg:'CSR Event "Tree Plantation" tomorrow', time:'2 hr ago', unread:false },
+    { icon:'⭐', msg:'Priya Nair recommended for promotion', time:'1 day ago', unread:false },
+  ],
+  admin: [
+    { icon:'🔴', msg:'Carbon Limit Exceeded — Global Operations', time:'2 min ago', unread:true },
+    { icon:'⚠️', msg:'IT Sector ESG dropped 3 points this week', time:'1 hr ago', unread:true },
+    { icon:'📜', msg:'ISO 14001 expires in 14 days', time:'3 hr ago', unread:true },
+    { icon:'🟢', msg:'Audit Complete — IT Sector 98% compliance', time:'5 hr ago', unread:false },
+    { icon:'📊', msg:'Monthly ESG Report ready for review', time:'1 day ago', unread:false },
+  ]
+};
+
+function buildNotifications() {
+  const list = document.getElementById('notif-list');
+  const notifs = NOTIFICATIONS_DATA[currentUser.role] || [];
+  list.innerHTML = notifs.map(n=>`<div class="px-4 py-3 ${n.unread?'bg-emerald-50/50':''} hover:bg-slate-50 transition-all cursor-pointer">
+    <div class="flex items-start gap-2.5">
+      <span class="text-xl">${n.icon}</span>
+      <div class="flex-1">
+        <p class="text-xs font-${n.unread?'bold':'semibold'} text-slate-${n.unread?'800':'600'} leading-relaxed">${n.msg}</p>
+        <small class="text-[9px] text-slate-400 font-semibold">${n.time}</small>
+      </div>
+      ${n.unread?'<span class="w-2 h-2 rounded-full bg-emerald-500 shrink-0 mt-1.5"></span>':''}
+    </div>
+  </div>`).join('');
+  const count = notifs.filter(n=>n.unread).length;
+  document.getElementById('notif-dot').style.display = count > 0 ? 'block' : 'none';
+}
+
+function toggleNotifs() {
+  document.getElementById('notif-panel').classList.toggle('hidden');
+}
+document.addEventListener('click', e => {
+  const panel = document.getElementById('notif-panel');
+  if (!panel.contains(e.target) && !e.target.closest('[onclick="toggleNotifs()"]')) {
+    panel.classList.add('hidden');
+  }
+});
+
+// =========================================================
+// AI CHAT
+// =========================================================
+function openChat() { document.getElementById('chat-window').classList.remove('hidden'); chatOpen=true; }
+function closeChat() { document.getElementById('chat-window').classList.add('hidden'); chatOpen=false; }
+function chatSuggest(text) {
+  document.getElementById('chat-input').value = text;
+  sendChat();
+}
+
+async function sendChat() {
+  const input = document.getElementById('chat-input');
+  const text = input.value.trim();
+  if (!text) return;
+  const msgs = document.getElementById('chat-msgs');
+  msgs.innerHTML += `<div class="flex justify-end"><div class="bg-[#0F3C2C] text-white p-3 rounded-2xl max-w-[85%] shadow-sm leading-relaxed">${text}</div></div>`;
+  input.value = '';
+  msgs.scrollTop = msgs.scrollHeight;
+  const loader = document.getElementById('chat-loader');
+  loader.classList.remove('hidden');
+  try {
+    const res = await fetch('/ecosphere/ai/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({message:text})});
+    const data = await res.json();
+    msgs.innerHTML += `<div class="flex"><div class="bg-white p-3 rounded-2xl max-w-[85%] border shadow-sm text-slate-700 leading-relaxed">${data.response}</div></div>`;
+  } catch(e) {
+    msgs.innerHTML += `<div class="flex"><div class="bg-white p-3 rounded-2xl max-w-[85%] border shadow-sm text-red-500 leading-relaxed">Could not reach AI server. Please try again.</div></div>`;
+  } finally {
+    loader.classList.add('hidden');
+    msgs.scrollTop = msgs.scrollHeight;
+  }
+}
+</script>
+</body>
+</html>

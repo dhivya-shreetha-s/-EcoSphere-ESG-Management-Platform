@@ -216,6 +216,7 @@
       <div id="page-mgr-rewards" class="page fade-in space-y-6"></div>
       <div id="page-mgr-teams" class="page fade-in space-y-6"></div>
       <div id="page-mgr-analytics" class="page fade-in space-y-6"></div>
+      <div id="page-mgr-environmental" class="page fade-in space-y-6"></div>
 
       <!-- ========== ADMIN PAGES ========== -->
       <div id="page-adm-dashboard" class="page fade-in space-y-6"></div>
@@ -465,6 +466,7 @@ const NAV_CONFIG = {
     { icon:'fa-people-group', label:'Teams', page:'mgr-teams' },
     { icon:'fa-star', label:'Rewards & Promotions', page:'mgr-rewards' },
     { icon:'fa-chart-bar', label:'Analytics', page:'mgr-analytics' },
+    { icon:'fa-leaf', label:'Environmental Module', page:'mgr-environmental' },
   ],
   admin: [
     { icon:'fa-gauge', label:'Dashboard', page:'adm-dashboard' },
@@ -525,6 +527,7 @@ function buildPage(id) {
     'mgr-rewards': buildMgrRewards,
     'mgr-teams': buildMgrTeams,
     'mgr-analytics': buildMgrAnalytics,
+    'mgr-environmental': buildMgrEnvironmental,
     'adm-dashboard': buildAdmDashboard,
     'adm-sectors': buildAdmSectors,
     'adm-employees': buildAdmEmployees,
@@ -1176,6 +1179,22 @@ function buildMgrDashboard() {
     </div>
   </div>
 
+  <!-- Environmental Summary Card -->
+  <div class="card p-6 space-y-4">
+    <div class="flex justify-between items-center">
+      ${sectionTitle('fa-leaf','Environmental Sustainability Overview')}
+      <button onclick="navigateTo('mgr-environmental')" class="text-[10px] font-bold text-[#0F3C2C] hover:underline">View Environmental Module →</button>
+    </div>
+    <div class="grid grid-cols-2 md:grid-cols-6 gap-4 text-xs">
+      <div class="bg-slate-50 p-3 rounded-2xl border"><span class="text-slate-400 block text-[9px] font-bold uppercase mb-1">Carbon Output</span><span class="font-black text-slate-800 text-sm">142t CO₂e</span></div>
+      <div class="bg-slate-50 p-3 rounded-2xl border"><span class="text-slate-400 block text-[9px] font-bold uppercase mb-1">Electricity</span><span class="font-black text-amber-700 text-sm">12,450 kWh</span></div>
+      <div class="bg-slate-50 p-3 rounded-2xl border"><span class="text-slate-400 block text-[9px] font-bold uppercase mb-1">Water Usage</span><span class="font-black text-blue-700 text-sm">45,000 L</span></div>
+      <div class="bg-slate-50 p-3 rounded-2xl border"><span class="text-slate-400 block text-[9px] font-bold uppercase mb-1">Recycle Rate</span><span class="font-black text-emerald-700 text-sm">78.5%</span></div>
+      <div class="bg-slate-50 p-3 rounded-2xl border"><span class="text-slate-400 block text-[9px] font-bold uppercase mb-1">Waste Generated</span><span class="font-black text-red-600 text-sm">1.8t</span></div>
+      <div class="bg-slate-50 p-3 rounded-2xl border"><span class="text-slate-400 block text-[9px] font-bold uppercase mb-1">Goals Achieved</span><span class="font-black text-[#0F3C2C] text-sm">85% achieved</span></div>
+    </div>
+  </div>
+
   <!-- Rewards Module -->
   <div class="card p-6 space-y-4">
     ${sectionTitle('fa-star','Reward Recommendations — AI-Powered')}
@@ -1790,6 +1809,137 @@ function buildMgrTeams() {
       </div>
     </div>`:'<div class="text-center py-4 text-slate-300 text-xs font-semibold border-2 border-dashed border-slate-100 rounded-xl">No members assigned yet</div>'}
   </div>`).join('')}`;
+
+function buildMgrEnvironmental() {
+  const el = document.getElementById('page-mgr-environmental');
+  el.innerHTML = `
+  <!-- Header with logo -->
+  <div class="flex items-center gap-3 mb-2">
+    <div class="w-10 h-10 bg-[#0F3C2C] rounded-2xl flex items-center justify-center shadow-md">
+      <svg class="w-6 h-6 text-emerald-400" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2ZM13 19.93C9.05 19.44 6 16.08 6 12C6 11.38 6.08 10.79 6.21 10.21L11 15V16C11 17.1 11.9 18 13 18V19.93ZM18.9 15.4C18.64 14.59 17.9 14 17 14H16V11C16 10.45 15.55 10 15 10H9V8H11C11.55 8 12 7.55 12 7V5H14C15.1 5 16 4.1 16 3V2.59C18.93 3.78 21 6.65 21 10C21 12.08 20.2 13.97 18.9 15.4Z" fill="currentColor"/>
+        <path d="M12 3C9 6 8.5 9.5 9 12C9.5 14.5 11 16.5 12 17C13.5 15.5 15.5 12 15.5 9.5C15.5 7 14.5 4.5 12 3Z" fill="#34D399" opacity="0.85"/>
+      </svg>
+    </div>
+    <div>
+      <h2 class="font-black text-slate-900 text-lg leading-tight">Environmental Module</h2>
+      <p class="text-[10px] text-emerald-700 font-bold uppercase tracking-widest">Resource Usage, Emissions & Trends</p>
+    </div>
+  </div>
+
+  <!-- KPI Grid (7 metrics) -->
+  <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4">
+    ${kpiCard('fa-leaf','Carbon Emission','142t','-8.2% MoM','text-slate-800')}
+    ${kpiCard('fa-bolt','Electricity','12.4k','kWh usage','text-amber-600')}
+    ${kpiCard('fa-droplet','Water Usage','45.0k','Liters consumed','text-blue-600')}
+    ${kpiCard('fa-file-lines','Paper Usage','320kg','Recycled paper','text-slate-800')}
+    ${kpiCard('fa-trash','Waste Gen.','1.8t','Landfill audit','text-red-600')}
+    ${kpiCard('fa-recycle','Recycle Rate','78.5%','↑ Target 80%','text-emerald-700')}
+    ${kpiCard('fa-bullseye','Goals Ach.','85%','7/8 Completed','text-[#0F3C2C]')}
+  </div>
+
+  <!-- Heat Map and Line Graph -->
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <!-- Line Graph -->
+    <div class="card p-6">
+      <h4 class="text-xs font-black text-slate-800 uppercase tracking-wider mb-4">📈 Environmental & Carbon Trend (6 Months)</h4>
+      <canvas id="mgr-env-trend-chart" height="190"></canvas>
+    </div>
+
+    <!-- Heat Map Grid -->
+    <div class="card p-6 flex flex-col justify-between">
+      <div>
+        <h4 class="text-xs font-black text-slate-800 uppercase tracking-wider mb-2">🔥 Carbon Intensity Heat Map (Weekly)</h4>
+        <p class="text-[10px] text-slate-400 font-semibold mb-4">Real-time daily CO2e emission levels across department facilities</p>
+      </div>
+      <div class="overflow-x-auto">
+        <table class="w-full text-center border-collapse text-[10px] font-bold">
+          <thead>
+            <tr class="bg-slate-50 text-slate-400 uppercase text-[9px] tracking-wider">
+              <th class="py-2.5 px-2 text-left rounded-l-lg">Facility Floor</th>
+              <th class="py-2.5 px-2">Mon</th>
+              <th class="py-2.5 px-2">Tue</th>
+              <th class="py-2.5 px-2">Wed</th>
+              <th class="py-2.5 px-2">Thu</th>
+              <th class="py-2.5 px-2 rounded-r-lg">Fri</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${[
+              { name: 'Floor 1 (R&D Lab)', data: [12, 14, 25, 15, 11] },
+              { name: 'Floor 2 (IT Server)', data: [28, 29, 32, 30, 27] },
+              { name: 'Floor 3 (Operations)', data: [15, 18, 16, 17, 14] },
+              { name: 'Floor 4 (Administration)', data: [8, 9, 7, 9, 8] }
+            ].map(row => `
+              <tr class="border-b border-slate-50 hover:bg-slate-50/50">
+                <td class="py-2 px-2 text-left font-bold text-slate-700">${row.name}</td>
+                ${row.data.map(val => {
+                  let bg = 'bg-emerald-100 text-emerald-800';
+                  if (val > 25) bg = 'bg-red-100 text-red-800';
+                  else if (val > 15) bg = 'bg-amber-100 text-amber-800';
+                  return `<td class="py-2 px-1"><span class="inline-block w-8 py-1 rounded ${bg}">${val}kg</span></td>`;
+                }).join('')}
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      </div>
+      <div class="flex justify-end gap-3 mt-4 text-[9px] font-semibold text-slate-400">
+        <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded bg-emerald-100 inline-block"></span> Low (<15kg)</span>
+        <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded bg-amber-100 inline-block"></span> Moderate</span>
+        <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded bg-red-100 inline-block"></span> High (>25kg)</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Sustainability Goals List -->
+  <div class="card p-6 space-y-4">
+    <div class="flex justify-between items-center">
+      ${sectionTitle('fa-bullseye', 'Sustainability Goals Tracker')}
+      <span class="stat-chip bg-emerald-100 text-emerald-800">Target Year: 2026</span>
+    </div>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+      ${[
+        { name: 'Reduce Carbon Emissions by 15%', cat: 'Emissions', progress: 82, target: '120t', current: '142t' },
+        { name: 'Transition to 90% Paperless Ops', cat: 'Resources', progress: 95, target: '90%', current: '85%' },
+        { name: 'Achieve 80% Recycling Rate', cat: 'Waste', progress: 78, target: '80%', current: '78.5%' }
+      ].map(g => `
+        <div class="p-4 bg-slate-50 rounded-2xl border space-y-3">
+          <div class="flex justify-between items-start">
+            <h5 class="font-bold text-xs text-slate-800 leading-tight">${g.name}</h5>
+            <span class="stat-chip bg-slate-200 text-slate-600 text-[9px]">${g.cat}</span>
+          </div>
+          <div>
+            <div class="flex justify-between text-[10px] font-bold text-slate-500 mb-1">
+              <span>Goal Progress</span><span>${g.progress}%</span>
+            </div>
+            ${progressBar(g.progress, g.progress >= 80 ? 'bg-emerald-500' : 'bg-amber-500')}
+          </div>
+          <div class="flex justify-between text-[10px] font-semibold text-slate-400 pt-1">
+            <span>Current: ${g.current}</span>
+            <span>Target: ${g.target}</span>
+          </div>
+        </div>
+      `).join('')}
+    </div>
+  </div>`;
+
+  setTimeout(() => {
+    new Chart(document.getElementById('mgr-env-trend-chart'), {
+      type: 'line',
+      data: {
+        labels: ['May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct'],
+        datasets: [
+          { label: 'Carbon (MT)', data: [160, 155, 150, 148, 144, 142], borderColor: '#ef4444', backgroundColor: 'rgba(239,68,68,0.05)', fill: true, tension: .4 },
+          { label: 'Electricity (kWh/100)', data: [145, 140, 138, 132, 128, 124.5], borderColor: '#eab308', backgroundColor: 'rgba(234,179,8,0.05)', fill: true, tension: .4 },
+          { label: 'Water (L/1000)', data: [55, 52, 50, 48, 46, 45], borderColor: '#3b82f6', backgroundColor: 'rgba(59,130,246,0.05)', fill: true, tension: .4 }
+        ]
+      },
+      options: {
+        plugins: { legend: { position: 'bottom', labels: { font: { size: 9 } } } }
+      }
+    });
+  }, 100);
 }
 
 // =========================================================
@@ -1866,6 +2016,22 @@ function buildAdmDashboard() {
           <button onclick="beginRenewal(this)" class="bg-purple-600 text-white text-[9px] font-black px-2.5 py-1.5 rounded-lg w-full">Begin Renewal</button>
         </div>
       </div>
+    </div>
+  </div>
+
+  <!-- Global Environmental Impact Board -->
+  <div class="card p-6 space-y-4">
+    <div class="flex justify-between items-center">
+      ${sectionTitle('fa-leaf','Global Environmental Metrics')}
+      <span class="stat-chip bg-emerald-100 text-emerald-800">Real-time Org Audits</span>
+    </div>
+    <div class="grid grid-cols-2 md:grid-cols-6 gap-4 text-xs">
+      <div class="bg-slate-50 p-3 rounded-2xl border"><span class="text-slate-400 block text-[9px] font-bold uppercase mb-1">Carbon Emission</span><span class="font-black text-slate-800 text-sm">542t CO₂e</span></div>
+      <div class="bg-slate-50 p-3 rounded-2xl border"><span class="text-slate-400 block text-[9px] font-bold uppercase mb-1">Electricity</span><span class="font-black text-amber-700 text-sm">48,900 kWh</span></div>
+      <div class="bg-slate-50 p-3 rounded-2xl border"><span class="text-slate-400 block text-[9px] font-bold uppercase mb-1">Water Usage</span><span class="font-black text-blue-700 text-sm">185,000 L</span></div>
+      <div class="bg-slate-50 p-3 rounded-2xl border"><span class="text-slate-400 block text-[9px] font-bold uppercase mb-1">Recycling Rate</span><span class="font-black text-emerald-700 text-sm">74.2%</span></div>
+      <div class="bg-slate-50 p-3 rounded-2xl border"><span class="text-slate-400 block text-[9px] font-bold uppercase mb-1">Waste Generated</span><span class="font-black text-red-600 text-sm">8.4t</span></div>
+      <div class="bg-slate-50 p-3 rounded-2xl border"><span class="text-slate-400 block text-[9px] font-bold uppercase mb-1">Goals Achieved</span><span class="font-black text-[#0F3C2C] text-sm">82% achieved</span></div>
     </div>
   </div>
 

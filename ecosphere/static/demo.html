@@ -214,6 +214,7 @@
       <div id="page-mgr-tasks" class="page fade-in space-y-6"></div>
       <div id="page-mgr-events" class="page fade-in space-y-6"></div>
       <div id="page-mgr-rewards" class="page fade-in space-y-6"></div>
+      <div id="page-mgr-teams" class="page fade-in space-y-6"></div>
       <div id="page-mgr-analytics" class="page fade-in space-y-6"></div>
 
       <!-- ========== ADMIN PAGES ========== -->
@@ -315,7 +316,7 @@ const EMP_CHALLENGES = [
 ];
 
 const CSR_EVENTS = [
-  { id:1, name:'Annual Tree Plantation Drive', date:'Nov 12', time:'8:00 AM', venue:'Maple Park', participants:42, slots:8, img:'https://images.unsplash.com/photo-1530608132975-6b4ee4fcd308?w=400&fit=crop', type:'tree' },
+  { id:1, name:'Annual Tree Plantation Drive', date:'Nov 12', time:'8:00 AM', venue:'Maple Park', participants:42, slots:8, img:'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=400&fit=crop', type:'tree' },
   { id:2, name:'Coastal Cleanup Day', date:'Nov 18', time:'7:30 AM', venue:'Silver Sands', participants:28, slots:22, img:'https://images.unsplash.com/photo-1618477388954-7852f32655ec?w=400&fit=crop', type:'cleanup' },
   { id:3, name:'Blood Donation Camp', date:'Nov 22', time:'9:00 AM', venue:'City Hospital', participants:15, slots:35, img:'https://images.unsplash.com/photo-1615461065929-4f8ffed6ca40?w=400&fit=crop', type:'blood' },
   { id:4, name:'Awareness Walk — No Plastics', date:'Dec 01', time:'6:30 AM', venue:'Central Boulevard', participants:60, slots:40, img:'https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?w=400&fit=crop', type:'awareness' },
@@ -349,6 +350,23 @@ const ADMIN_ALERTS = [
 let currentUser = null;
 let registeredEvents = new Set();
 let chatOpen = false;
+let activeSectorFilter = 'All';
+let POLICY_STATUS = {
+  'ESG Sustainability Policy': 'Acknowledged',
+  'Data Privacy & GDPR Policy': 'Pending',
+  'Workplace Safety Guidelines': 'Acknowledged',
+  'Code of Conduct': 'Acknowledged',
+  'Waste Management Protocol': 'Pending',
+  'Diversity & Inclusion Policy': 'Acknowledged'
+};
+
+function getEmployeeSector(name) {
+  if (name.includes('Elena') || name.includes('David') || name.includes('Sarah')) return 'Information Technology';
+  if (name.includes('Marcus')) return 'Global Operations';
+  if (name.includes('Priya')) return 'Sales & Logistics';
+  if (name.includes('James') || name.includes('Kowalski')) return 'Finance & Accounting';
+  return 'Information Technology';
+}
 
 // =========================================================
 // AUTH
@@ -425,6 +443,7 @@ const NAV_CONFIG = {
     { icon:'fa-users', label:'Employee Directory', page:'mgr-employees' },
     { icon:'fa-kanban', label:'Task Management', page:'mgr-tasks' },
     { icon:'fa-calendar-check', label:'CSR Events', page:'mgr-events' },
+    { icon:'fa-people-group', label:'Teams', page:'mgr-teams' },
     { icon:'fa-star', label:'Rewards & Promotions', page:'mgr-rewards' },
     { icon:'fa-chart-bar', label:'Analytics', page:'mgr-analytics' },
   ],
@@ -485,6 +504,7 @@ function buildPage(id) {
     'mgr-tasks': buildMgrTasks,
     'mgr-events': buildMgrEvents,
     'mgr-rewards': buildMgrRewards,
+    'mgr-teams': buildMgrTeams,
     'mgr-analytics': buildMgrAnalytics,
     'adm-dashboard': buildAdmDashboard,
     'adm-sectors': buildAdmSectors,
@@ -739,15 +759,15 @@ function buildEmpDashboard() {
         <h4 class="text-xs font-black text-slate-800 uppercase tracking-widest">🌳 Upcoming Events</h4>
         <button onclick="navigateTo('emp-events')" class="text-[10px] font-bold text-[#0F3C2C] hover:underline">View All</button>
       </div>
-      ${CSR_EVENTS.slice(0,2).map(e=>`<div class="flex gap-3 items-center p-3 bg-slate-50 rounded-xl border">
+      ${CSR_EVENTS.slice(0,2).map(e=>{ const reg = registeredEvents.has(e.id); return `<div class="flex gap-3 items-center p-3 bg-slate-50 rounded-xl border">
         <img src="${e.img}" class="w-12 h-12 rounded-xl object-cover shrink-0">
         <div class="flex-1 min-w-0">
           <h5 class="font-bold text-xs text-slate-800 truncate">${e.name}</h5>
           <p class="text-[10px] text-slate-400 font-semibold">${e.date} · ${e.venue}</p>
           <p class="text-[10px] ${e.slots<10?'text-red-500':'text-emerald-600'} font-bold">${e.slots} slots remaining</p>
         </div>
-        <button onclick="toggleEventReg(${e.id},this)" class="shrink-0 bg-[#0F3C2C] text-white text-[9px] font-black px-2.5 py-1.5 rounded-lg hover:bg-[#09291D] transition-all">Register</button>
-      </div>`).join('')}
+        <button onclick="toggleEventReg(${e.id},this)" class="shrink-0 text-[9px] font-black px-2.5 py-1.5 rounded-lg transition-all ${reg?'bg-emerald-100 text-emerald-700 border border-emerald-300':'bg-[#0F3C2C] text-white hover:bg-[#09291D]'}">${reg?'Registered ✅':'Register'}</button>
+      </div>`; }).join('')}
     </div>
   </div>`;
 }
@@ -939,20 +959,88 @@ function buildEmpRewards() {
   </div>`;
 }
 
+const POLICY_DETAILS = {
+  'ESG Sustainability Policy': { desc: 'This policy outlines the company commitment to Environmental, Social, and Governance principles. All employees must follow carbon-neutral work practices, participate in quarterly ESG audits, and report any sustainability violations to their manager.', scope: 'All Employees', effective: 'Jan 2023', review: 'Jan 2024', contact: 'ESG Team (esg@ecosphere.ai)' },
+  'Data Privacy & GDPR Policy': { desc: 'Governs how employee and customer data is collected, processed, and stored. Compliance with GDPR Article 5 is mandatory. Any data breach must be reported within 72 hours to the DPO. Employee access to personal data is role-restricted.', scope: 'All Departments', effective: 'May 2023', review: 'May 2024', contact: 'DPO (privacy@ecosphere.ai)' },
+  'Workplace Safety Guidelines': { desc: 'Ensures a safe and healthy work environment for all employees. Includes fire drill protocols, ergonomic workstation setups, incident reporting procedures, and mental wellness resources. Violations may result in disciplinary action.', scope: 'All Employees', effective: 'Mar 2023', review: 'Mar 2024', contact: 'Safety Officer (safety@ecosphere.ai)' },
+  'Code of Conduct': { desc: 'Sets standards for professional behaviour, ethics, and workplace culture. Employees are expected to treat colleagues with respect, avoid conflicts of interest, and uphold the company values of integrity, sustainability, and innovation.', scope: 'All Staff', effective: 'Feb 2023', review: 'Feb 2024', contact: 'HR (hr@ecosphere.ai)' },
+  'Waste Management Protocol': { desc: 'Defines the procedures for segregating, disposing, and recycling waste generated in company premises. Includes e-waste disposal standards, recycling bins usage, and hazardous material handling. Zero-waste targets are reviewed quarterly.', scope: 'Facilities & All Staff', effective: 'Apr 2023', review: 'Apr 2024', contact: 'Facilities (facilities@ecosphere.ai)' },
+  'Diversity & Inclusion Policy': { desc: 'Commits the organization to fostering a diverse, equitable, and inclusive workplace. Anti-discrimination, equal pay, and accessibility standards are enforced. Employees can report concerns anonymously through the DEI helpline.', scope: 'All Employees', effective: 'Jun 2023', review: 'Jun 2024', contact: 'DEI Officer (dei@ecosphere.ai)' },
+};
+
+function viewPolicy(name, icon) {
+  const d = POLICY_DETAILS[name] || { desc: 'No details available.', scope:'All', effective:'2023', review:'2024', contact:'—' };
+  const modal = document.createElement('div');
+  modal.id = 'policy-modal';
+  modal.className = 'fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4';
+  modal.innerHTML = `
+  <div class="bg-white rounded-3xl max-w-lg w-full shadow-2xl overflow-hidden">
+    <div class="bg-gradient-to-r from-[#0F3C2C] to-[#1a5c40] text-white px-6 py-5">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <span class="text-3xl">${icon}</span>
+          <div>
+            <h3 class="font-black text-base leading-tight">${name}</h3>
+            <p class="text-emerald-300 text-[10px] font-semibold mt-0.5">Policy Document</p>
+          </div>
+        </div>
+        <button onclick="document.getElementById('policy-modal').remove()" class="text-white/70 hover:text-white w-8 h-8 flex items-center justify-center rounded-xl hover:bg-white/10 transition-all"><i class="fa fa-times"></i></button>
+      </div>
+    </div>
+    <div class="p-6 space-y-4">
+      <div class="bg-emerald-50 border border-emerald-100 rounded-2xl p-4">
+        <p class="text-xs text-slate-700 leading-relaxed">${d.desc}</p>
+      </div>
+      <div class="grid grid-cols-2 gap-3">
+        <div class="bg-slate-50 rounded-xl p-3">
+          <p class="text-[9px] font-black text-slate-400 uppercase tracking-wider mb-1">Scope</p>
+          <p class="text-xs font-bold text-slate-700">${d.scope}</p>
+        </div>
+        <div class="bg-slate-50 rounded-xl p-3">
+          <p class="text-[9px] font-black text-slate-400 uppercase tracking-wider mb-1">Effective From</p>
+          <p class="text-xs font-bold text-slate-700">${d.effective}</p>
+        </div>
+        <div class="bg-slate-50 rounded-xl p-3">
+          <p class="text-[9px] font-black text-slate-400 uppercase tracking-wider mb-1">Review Date</p>
+          <p class="text-xs font-bold text-slate-700">${d.review}</p>
+        </div>
+        <div class="bg-slate-50 rounded-xl p-3">
+          <p class="text-[9px] font-black text-slate-400 uppercase tracking-wider mb-1">Contact</p>
+          <p class="text-xs font-bold text-slate-700">${d.contact}</p>
+        </div>
+      </div>
+      <button onclick="document.getElementById('policy-modal').remove()" class="w-full bg-[#0F3C2C] text-white font-bold text-xs py-3 rounded-xl hover:bg-[#09291D] transition-all">Close Policy</button>
+    </div>
+  </div>`;
+  document.body.appendChild(modal);
+}
+
+function acknowledgePolicy(policyName, btn) {
+  POLICY_STATUS[policyName] = 'Acknowledged';
+  showToast(`"${policyName}" accepted successfully!`, 'success');
+  buildEmpPolicies();
+}
+
 function buildEmpPolicies() {
   const el = document.getElementById('page-emp-policies');
   const policies = [
-    { icon:'🌱', name:'ESG Sustainability Policy', cat:'ESG', updated:'Oct 2023', status:'Acknowledged' },
-    { icon:'🔒', name:'Data Privacy & GDPR Policy', cat:'Compliance', updated:'Sep 2023', status:'Pending' },
-    { icon:'🛡️', name:'Workplace Safety Guidelines', cat:'Safety', updated:'Aug 2023', status:'Acknowledged' },
-    { icon:'📋', name:'Code of Conduct', cat:'HR', updated:'Jul 2023', status:'Acknowledged' },
-    { icon:'♻️', name:'Waste Management Protocol', cat:'Environmental', updated:'Oct 2023', status:'Pending' },
-    { icon:'🤝', name:'Diversity & Inclusion Policy', cat:'Social', updated:'Sep 2023', status:'Acknowledged' },
+    { icon:'🌱', name:'ESG Sustainability Policy', cat:'ESG', updated:'Oct 2023' },
+    { icon:'🔒', name:'Data Privacy & GDPR Policy', cat:'Compliance', updated:'Sep 2023' },
+    { icon:'🛡️', name:'Workplace Safety Guidelines', cat:'Safety', updated:'Aug 2023' },
+    { icon:'📋', name:'Code of Conduct', cat:'HR', updated:'Jul 2023' },
+    { icon:'♻️', name:'Waste Management Protocol', cat:'Environmental', updated:'Oct 2023' },
+    { icon:'🤝', name:'Diversity & Inclusion Policy', cat:'Social', updated:'Sep 2023' },
   ];
+  
+  // Fill the status dynamically from global POLICY_STATUS
+  policies.forEach(p => {
+    p.status = POLICY_STATUS[p.name] || 'Pending';
+  });
+
   el.innerHTML = `
   <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
     ${kpiCard('fa-file-shield','Total Policies',policies.length,'','text-slate-800')}
-    ${kpiCard('fa-check','Acknowledged',policies.filter(p=>p.status==='Acknowledged').length,'','text-emerald-600')}
+    ${kpiCard('fa-check','Accepted',policies.filter(p=>p.status==='Acknowledged').length,'','text-emerald-600')}
     ${kpiCard('fa-clock','Pending Review',policies.filter(p=>p.status==='Pending').length,'','text-amber-600')}
   </div>
   <div class="card p-6">
@@ -967,10 +1055,12 @@ function buildEmpPolicies() {
           </div>
         </div>
         <div class="flex items-center gap-2">
-          <span class="stat-chip ${p.status==='Acknowledged'?'bg-emerald-100 text-emerald-700':'bg-amber-100 text-amber-700'}">${p.status}</span>
-          <button class="border border-slate-200 text-slate-600 hover:border-[#0F3C2C] hover:text-[#0F3C2C] font-bold text-[10px] px-2.5 py-1 rounded-lg transition-all">View</button>
-          <button class="border border-slate-200 text-slate-600 font-bold text-[10px] px-2.5 py-1 rounded-lg hover:bg-slate-50 transition-all">Download</button>
-          ${p.status==='Pending'?`<button class="bg-[#0F3C2C] text-white font-bold text-[10px] px-2.5 py-1 rounded-lg hover:bg-[#09291D] transition-all">Accept</button>`:''}
+          <button onclick="viewPolicy('${p.name}','${p.icon}')" class="border border-slate-200 text-slate-600 hover:border-[#0F3C2C] hover:text-[#0F3C2C] font-bold text-[10px] px-2.5 py-1.5 rounded-lg transition-all">View</button>
+          ${p.status==='Pending'?`
+            <button onclick="acknowledgePolicy('${p.name}',this)" class="bg-[#0F3C2C] text-white font-bold text-[10px] px-2.5 py-1.5 rounded-lg hover:bg-[#09291D] transition-all">Accept</button>
+          `:`
+            <button disabled class="bg-emerald-100 text-emerald-700 font-bold text-[10px] px-2.5 py-1.5 rounded-lg cursor-not-allowed">Accepted ✅</button>
+          `}
         </div>
       </div>`).join('')}
     </div>
@@ -1103,30 +1193,133 @@ function buildMgrEmployees() {
   </div>`;
 }
 
+const TEAM_TASKS = [];
+
+function openAddTaskModal() {
+  let m = document.getElementById('add-task-modal');
+  if (!m) {
+    m = document.createElement('div');
+    m.id = 'add-task-modal';
+    m.className = 'fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4';
+    m.innerHTML = `
+    <div class="bg-white rounded-3xl max-w-md w-full shadow-2xl p-6 space-y-4">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-2">
+          <div class="w-8 h-8 bg-[#0F3C2C] rounded-xl flex items-center justify-center">
+            <svg class="w-4 h-4 text-emerald-400" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5v-9l6 4.5-6 4.5z"/></svg>
+          </div>
+          <h3 class="font-black text-slate-800 text-base">Assign New Task</h3>
+        </div>
+        <button onclick="document.getElementById('add-task-modal').remove()" class="text-slate-400 hover:text-slate-700 w-8 h-8 flex items-center justify-center rounded-xl hover:bg-slate-100"><i class="fa fa-times"></i></button>
+      </div>
+      <div class="space-y-3">
+        <div>
+          <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Task Name</label>
+          <input id="at-name" type="text" placeholder="e.g. Carbon Audit Q4" class="w-full border border-slate-200 rounded-xl px-3.5 py-2 text-xs focus:ring-1 focus:ring-[#0F3C2C] focus:outline-none">
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Assign To (Team)</label>
+            <select id="at-team" class="w-full border border-slate-200 rounded-xl px-3.5 py-2 text-xs focus:ring-1 focus:ring-[#0F3C2C] focus:outline-none">
+              <option>Green Ops Alpha</option>
+              <option>Green Ops Beta</option>
+              <option>Green Ops Gamma</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Priority</label>
+            <select id="at-priority" class="w-full border border-slate-200 rounded-xl px-3.5 py-2 text-xs focus:ring-1 focus:ring-[#0F3C2C] focus:outline-none">
+              <option>High</option><option>Medium</option><option>Low</option>
+            </select>
+          </div>
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Deadline</label>
+            <input id="at-deadline" type="text" placeholder="Dec 15" class="w-full border border-slate-200 rounded-xl px-3.5 py-2 text-xs focus:ring-1 focus:ring-[#0F3C2C] focus:outline-none">
+          </div>
+          <div>
+            <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Category</label>
+            <select id="at-cat" class="w-full border border-slate-200 rounded-xl px-3.5 py-2 text-xs focus:ring-1 focus:ring-[#0F3C2C] focus:outline-none">
+              <option>ESG Audit</option><option>Carbon Report</option><option>CSR</option><option>Compliance</option><option>Other</option>
+            </select>
+          </div>
+        </div>
+        <div>
+          <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Description</label>
+          <textarea id="at-desc" rows="2" placeholder="Task description..." class="w-full border border-slate-200 rounded-xl px-3.5 py-2 text-xs focus:ring-1 focus:ring-[#0F3C2C] focus:outline-none resize-none"></textarea>
+        </div>
+      </div>
+      <div class="flex gap-3">
+        <button onclick="document.getElementById('add-task-modal').remove()" class="flex-1 border border-slate-200 text-slate-600 font-bold text-xs py-2.5 rounded-xl hover:bg-slate-50">Cancel</button>
+        <button onclick="saveNewTask()" class="flex-1 bg-[#0F3C2C] text-white font-bold text-xs py-2.5 rounded-xl hover:bg-[#09291D] transition-all">Assign Task</button>
+      </div>
+    </div>`;
+    document.body.appendChild(m);
+  } else { m.classList.remove('hidden'); }
+}
+
+function saveNewTask() {
+  const name = document.getElementById('at-name').value.trim();
+  const team = document.getElementById('at-team').value;
+  const priority = document.getElementById('at-priority').value;
+  const deadline = document.getElementById('at-deadline').value.trim() || 'TBD';
+  const cat = document.getElementById('at-cat').value;
+  if (!name) { showToast('Please enter a task name!', 'error'); return; }
+  TEAM_TASKS.unshift({ name, team, priority, deadline, cat, progress: 0, status: 'To Do', by: currentUser ? currentUser.name : 'Manager' });
+  document.getElementById('add-task-modal').remove();
+  showToast(`Task "${name}" assigned to ${team}!`, 'success');
+  buildPage('mgr-tasks');
+}
+
 function buildMgrTasks() {
   const el = document.getElementById('page-mgr-tasks');
+  const allTasks = [...TEAM_TASKS, ...EMP_TASKS.map(t => ({...t, team:'Green Ops Alpha'})) ];
   const cols = [
-    { label:'📋 To Do', color:'bg-slate-100', tasks: EMP_TASKS.filter(t=>t.progress===0) },
-    { label:'🔄 In Progress', color:'bg-blue-50', tasks: EMP_TASKS.filter(t=>t.progress>0&&t.progress<100) },
-    { label:'✅ Done', color:'bg-emerald-50', tasks: EMP_TASKS.filter(t=>t.progress===100) },
+    { label:'📋 To Do', color:'bg-slate-100', tasks: allTasks.filter(t => t.progress === 0 || t.status === 'To Do') },
+    { label:'🔄 In Progress', color:'bg-blue-50', tasks: allTasks.filter(t => t.progress > 0 && t.progress < 100 && t.status !== 'To Do') },
+    { label:'✅ Done', color:'bg-emerald-50', tasks: allTasks.filter(t => t.progress === 100 || t.status === 'Done') },
   ];
   el.innerHTML = `
-  <div class="flex justify-between items-center">
-    ${sectionTitle('fa-kanban','Task Management — Kanban Board')}
-    <button class="bg-[#0F3C2C] text-white font-bold text-xs px-4 py-2 rounded-xl hover:bg-[#09291D] transition-all"><i class="fa fa-plus mr-1"></i> Assign Task</button>
+  <!-- Header with logo -->
+  <div class="flex items-center justify-between">
+    <div class="flex items-center gap-3">
+      <div class="w-10 h-10 bg-[#0F3C2C] rounded-2xl flex items-center justify-center shadow-md">
+        <svg class="w-6 h-6 text-emerald-400" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2ZM13 19.93C9.05 19.44 6 16.08 6 12C6 11.38 6.08 10.79 6.21 10.21L11 15V16C11 17.1 11.9 18 13 18V19.93ZM18.9 15.4C18.64 14.59 17.9 14 17 14H16V11C16 10.45 15.55 10 15 10H9V8H11C11.55 8 12 7.55 12 7V5H14C15.1 5 16 4.1 16 3V2.59C18.93 3.78 21 6.65 21 10C21 12.08 20.2 13.97 18.9 15.4Z" fill="currentColor"/>
+          <path d="M12 3C9 6 8.5 9.5 9 12C9.5 14.5 11 16.5 12 17C13.5 15.5 15.5 12 15.5 9.5C15.5 7 14.5 4.5 12 3Z" fill="#34D399" opacity="0.85"/>
+        </svg>
+      </div>
+      <div>
+        <h2 class="font-black text-slate-900 text-lg leading-tight">Task Management</h2>
+        <p class="text-[10px] text-emerald-700 font-bold uppercase tracking-widest">Kanban Board — Team View</p>
+      </div>
+    </div>
+    <button onclick="openAddTaskModal()" class="bg-[#0F3C2C] text-white font-bold text-xs px-4 py-2.5 rounded-xl hover:bg-[#09291D] transition-all flex items-center gap-2">
+      <i class="fa fa-plus"></i> Assign Task
+    </button>
   </div>
+  <!-- KPIs -->
+  <div class="grid grid-cols-4 gap-4">
+    ${kpiCard('fa-list','Total Tasks',allTasks.length,'All Teams','text-slate-800')}
+    ${kpiCard('fa-spinner','In Progress',allTasks.filter(t=>t.progress>0&&t.progress<100&&t.status!=='To Do').length,'Active','text-blue-600')}
+    ${kpiCard('fa-check-circle','Completed',allTasks.filter(t=>t.progress===100||t.status==='Done').length,'','text-emerald-600')}
+    ${kpiCard('fa-triangle-exclamation','Overdue',1,'Needs attention','text-red-600')}
+  </div>
+  <!-- Kanban -->
   <div class="grid grid-cols-3 gap-6">
     ${cols.map(col=>`<div class="${col.color} p-4 rounded-2xl space-y-3 kanban-col">
       <h4 class="text-xs font-black text-slate-800 uppercase tracking-wider">${col.label} <span class="text-slate-400">(${col.tasks.length})</span></h4>
-      ${col.tasks.map(t=>`<div class="bg-white p-3.5 rounded-xl border shadow-sm space-y-2">
+      ${col.tasks.map(t=>`<div class="bg-white p-3.5 rounded-xl border shadow-sm space-y-2 hover:-translate-y-0.5 transition-transform">
         <h5 class="font-bold text-xs text-slate-800">${t.name}</h5>
         <div class="flex justify-between">${priorityBadge(t.priority)}<span class="text-[10px] text-slate-400 font-semibold">${t.deadline}</span></div>
-        ${progressBar(t.progress)}
+        ${progressBar(t.progress || 0)}
         <div class="flex justify-between text-[9px] font-semibold text-slate-400">
-          <span>Assigned to: Elena R.</span><span>${t.progress}%</span>
+          <span><i class="fa fa-users mr-1"></i>${t.team || 'Green Ops Alpha'}</span><span>${t.progress || 0}%</span>
         </div>
+        ${t.cat ? `<span class="stat-chip bg-emerald-50 text-emerald-700">${t.cat}</span>` : ''}
       </div>`).join('')}
-      ${col.tasks.length===0?`<div class="text-center py-6 text-slate-300 text-xs font-semibold">Drop tasks here</div>`:''}
+      ${col.tasks.length===0?`<div class="text-center py-8 text-slate-300 text-xs font-semibold border-2 border-dashed border-slate-200 rounded-xl">No tasks here</div>`:''}
     </div>`).join('')}
   </div>`;
 }
@@ -1134,31 +1327,133 @@ function buildMgrTasks() {
 function buildMgrEvents() {
   const el = document.getElementById('page-mgr-events');
   el.innerHTML = `
-  <div class="flex justify-between items-center">
-    ${sectionTitle('fa-calendar-check','CSR Event Management')}
-    <button onclick="openEventModal()" class="bg-[#0F3C2C] text-white font-bold text-xs px-4 py-2 rounded-xl hover:bg-[#09291D] transition-all"><i class="fa fa-plus mr-1"></i> Create Event</button>
+  <!-- Header with logo -->
+  <div class="flex items-center justify-between">
+    <div class="flex items-center gap-3">
+      <div class="w-10 h-10 bg-[#0F3C2C] rounded-2xl flex items-center justify-center shadow-md">
+        <svg class="w-6 h-6 text-emerald-400" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2ZM13 19.93C9.05 19.44 6 16.08 6 12C6 11.38 6.08 10.79 6.21 10.21L11 15V16C11 17.1 11.9 18 13 18V19.93ZM18.9 15.4C18.64 14.59 17.9 14 17 14H16V11C16 10.45 15.55 10 15 10H9V8H11C11.55 8 12 7.55 12 7V5H14C15.1 5 16 4.1 16 3V2.59C18.93 3.78 21 6.65 21 10C21 12.08 20.2 13.97 18.9 15.4Z" fill="currentColor"/>
+          <path d="M12 3C9 6 8.5 9.5 9 12C9.5 14.5 11 16.5 12 17C13.5 15.5 15.5 12 15.5 9.5C15.5 7 14.5 4.5 12 3Z" fill="#34D399" opacity="0.85"/>
+        </svg>
+      </div>
+      <div>
+        <h2 class="font-black text-slate-900 text-lg leading-tight">CSR Event Management</h2>
+        <p class="text-[10px] text-emerald-700 font-bold uppercase tracking-widest">Manage & Approve Events</p>
+      </div>
+    </div>
+    <button onclick="openEventModal()" class="bg-[#0F3C2C] text-white font-bold text-xs px-4 py-2.5 rounded-xl hover:bg-[#09291D] transition-all flex items-center gap-2">
+      <i class="fa fa-plus"></i> Create Event
+    </button>
   </div>
+  <!-- Stats bar -->
+  <div class="grid grid-cols-3 gap-4">
+    ${kpiCard('fa-calendar-check','Total Events',CSR_EVENTS.length,'Active','text-[#0F3C2C]')}
+    ${kpiCard('fa-users','Total Registrations',CSR_EVENTS.reduce((s,e)=>s+e.participants,0),'Across all events','text-blue-600')}
+    ${kpiCard('fa-door-open','Available Slots',CSR_EVENTS.reduce((s,e)=>s+e.slots,0),'Remaining','text-amber-600')}
+  </div>
+  <!-- Events grid -->
   <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
     ${CSR_EVENTS.map(e=>`<div class="card overflow-hidden">
-      <img src="${e.img}" class="w-full h-40 object-cover">
-      <div class="p-5 space-y-3">
-        <h4 class="font-bold text-slate-800">${e.name}</h4>
-        <div class="flex flex-wrap gap-2 text-[10px] font-semibold text-slate-400">
-          <span><i class="fa fa-calendar mr-1"></i>${e.date} ${e.time}</span>
-          <span><i class="fa fa-map-marker mr-1"></i>${e.venue}</span>
-        </div>
-        <div class="flex justify-between items-center">
-          <div class="space-y-1 flex-1 mr-4">
-            <div class="flex justify-between text-[10px] font-bold text-slate-500">
-              <span>Registrations</span><span>${e.participants}/${e.participants+e.slots}</span>
-            </div>
-            ${progressBar(Math.round(e.participants/(e.participants+e.slots)*100))}
+      <div class="relative">
+        <img src="${e.img}" class="w-full h-44 object-cover">
+        <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
+        <div class="absolute bottom-3 left-3 right-3 flex items-end justify-between">
+          <div>
+            <h4 class="font-black text-white text-sm leading-tight">${e.name}</h4>
+            <p class="text-[10px] text-white/80 font-semibold">${e.date} · ${e.time}</p>
           </div>
-          <button onclick="approveEvent(${e.id}, this)" class="bg-[#0F3C2C] text-white text-[10px] font-black px-3 py-1.5 rounded-lg hover:bg-[#09291D] transition-all">Approve</button>
+          <div class="flex gap-1.5">
+            <button onclick="editEvent(${e.id})" class="bg-white/20 backdrop-blur-sm text-white text-[9px] font-black px-2 py-1 rounded-lg hover:bg-white/30 transition-all"><i class="fa fa-pen"></i> Edit</button>
+          </div>
+        </div>
+      </div>
+      <div class="p-4 space-y-3">
+        <div class="flex items-center gap-2 text-[10px] font-semibold text-slate-400 flex-wrap">
+          <span><i class="fa fa-map-marker mr-1"></i>${e.venue}</span>
+          <span class="w-1 h-1 bg-slate-300 rounded-full"></span>
+          <span><i class="fa fa-users mr-1"></i>${e.participants} joined · ${e.slots} slots left</span>
+        </div>
+        <div>
+          <div class="flex justify-between text-[10px] font-bold text-slate-500 mb-1">
+            <span>Registration Progress</span><span>${e.participants}/${e.participants+e.slots}</span>
+          </div>
+          ${progressBar(Math.round(e.participants/(e.participants+e.slots)*100))}
+        </div>
+        <div class="flex gap-2">
+          <button onclick="approveEvent(${e.id}, this)" class="flex-1 bg-[#0F3C2C] text-white text-[10px] font-black py-2 rounded-xl hover:bg-[#09291D] transition-all">Approve</button>
+          <label class="flex-1 border border-slate-200 text-slate-600 text-[10px] font-black py-2 rounded-xl hover:bg-slate-50 transition-all text-center cursor-pointer">
+            <i class="fa fa-image mr-1"></i> Photo
+            <input type="file" accept="image/*" class="hidden" onchange="updateEventPhoto(${e.id}, this)">
+          </label>
         </div>
       </div>
     </div>`).join('')}
   </div>`;
+}
+
+function updateEventPhoto(id, input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(ev) {
+    const e = CSR_EVENTS.find(x => x.id === id);
+    if (e) { e.img = ev.target.result; buildPage('mgr-events'); showToast('Event photo updated!', 'success'); }
+  };
+  reader.readAsDataURL(file);
+}
+
+function editEvent(id) {
+  const e = CSR_EVENTS.find(x => x.id === id);
+  if (!e) return;
+  let m = document.getElementById('edit-event-modal');
+  if (m) m.remove();
+  m = document.createElement('div');
+  m.id = 'edit-event-modal';
+  m.className = 'fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4';
+  m.innerHTML = `
+  <div class="bg-white rounded-3xl max-w-md w-full shadow-2xl p-6 space-y-4">
+    <div class="flex items-center justify-between">
+      <h3 class="font-black text-slate-800 text-base">Edit Event</h3>
+      <button onclick="document.getElementById('edit-event-modal').remove()" class="text-slate-400 hover:text-slate-700 w-8 h-8 flex items-center justify-center rounded-xl hover:bg-slate-100"><i class="fa fa-times"></i></button>
+    </div>
+    <div class="space-y-3">
+      <div><label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Event Name</label>
+        <input id="ee-name" type="text" value="${e.name}" class="w-full border border-slate-200 rounded-xl px-3.5 py-2 text-xs focus:ring-1 focus:ring-[#0F3C2C] focus:outline-none"></div>
+      <div class="grid grid-cols-2 gap-3">
+        <div><label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Date</label>
+          <input id="ee-date" type="text" value="${e.date}" class="w-full border border-slate-200 rounded-xl px-3.5 py-2 text-xs focus:ring-1 focus:ring-[#0F3C2C] focus:outline-none"></div>
+        <div><label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Time</label>
+          <input id="ee-time" type="text" value="${e.time}" class="w-full border border-slate-200 rounded-xl px-3.5 py-2 text-xs focus:ring-1 focus:ring-[#0F3C2C] focus:outline-none"></div>
+      </div>
+      <div><label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Venue</label>
+        <input id="ee-venue" type="text" value="${e.venue}" class="w-full border border-slate-200 rounded-xl px-3.5 py-2 text-xs focus:ring-1 focus:ring-[#0F3C2C] focus:outline-none"></div>
+      <div class="grid grid-cols-2 gap-3">
+        <div><label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Participants</label>
+          <input id="ee-parts" type="number" value="${e.participants}" class="w-full border border-slate-200 rounded-xl px-3.5 py-2 text-xs focus:ring-1 focus:ring-[#0F3C2C] focus:outline-none"></div>
+        <div><label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Slots</label>
+          <input id="ee-slots" type="number" value="${e.slots}" class="w-full border border-slate-200 rounded-xl px-3.5 py-2 text-xs focus:ring-1 focus:ring-[#0F3C2C] focus:outline-none"></div>
+      </div>
+    </div>
+    <div class="flex gap-3">
+      <button onclick="document.getElementById('edit-event-modal').remove()" class="flex-1 border border-slate-200 text-slate-600 font-bold text-xs py-2.5 rounded-xl hover:bg-slate-50">Cancel</button>
+      <button onclick="saveEditedEvent(${id})" class="flex-1 bg-[#0F3C2C] text-white font-bold text-xs py-2.5 rounded-xl hover:bg-[#09291D] transition-all">Save Changes</button>
+    </div>
+  </div>`;
+  document.body.appendChild(m);
+}
+
+function saveEditedEvent(id) {
+  const e = CSR_EVENTS.find(x => x.id === id);
+  if (!e) return;
+  e.name = document.getElementById('ee-name').value.trim() || e.name;
+  e.date = document.getElementById('ee-date').value.trim() || e.date;
+  e.time = document.getElementById('ee-time').value.trim() || e.time;
+  e.venue = document.getElementById('ee-venue').value.trim() || e.venue;
+  e.participants = parseInt(document.getElementById('ee-parts').value) || e.participants;
+  e.slots = parseInt(document.getElementById('ee-slots').value) || e.slots;
+  document.getElementById('edit-event-modal').remove();
+  showToast(`Event "${e.name}" updated!`, 'success');
+  buildPage('mgr-events');
 }
 
 function buildMgrRewards() {
@@ -1213,18 +1508,188 @@ function buildMgrRewards() {
 function buildMgrAnalytics() {
   const el = document.getElementById('page-mgr-analytics');
   el.innerHTML = `
+  <!-- Header with logo -->
+  <div class="flex items-center gap-3 mb-2">
+    <div class="w-10 h-10 bg-[#0F3C2C] rounded-2xl flex items-center justify-center shadow-md">
+      <svg class="w-6 h-6 text-emerald-400" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2ZM13 19.93C9.05 19.44 6 16.08 6 12C6 11.38 6.08 10.79 6.21 10.21L11 15V16C11 17.1 11.9 18 13 18V19.93ZM18.9 15.4C18.64 14.59 17.9 14 17 14H16V11C16 10.45 15.55 10 15 10H9V8H11C11.55 8 12 7.55 12 7V5H14C15.1 5 16 4.1 16 3V2.59C18.93 3.78 21 6.65 21 10C21 12.08 20.2 13.97 18.9 15.4Z" fill="currentColor"/>
+        <path d="M12 3C9 6 8.5 9.5 9 12C9.5 14.5 11 16.5 12 17C13.5 15.5 15.5 12 15.5 9.5C15.5 7 14.5 4.5 12 3Z" fill="#34D399" opacity="0.85"/>
+      </svg>
+    </div>
+    <div>
+      <h2 class="font-black text-slate-900 text-lg leading-tight">Department Analytics</h2>
+      <p class="text-[10px] text-emerald-700 font-bold uppercase tracking-widest">Team Performance & ESG Growth</p>
+    </div>
+  </div>
   <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-    <div class="card p-6"><h4 class="text-xs font-black text-slate-800 uppercase tracking-wider mb-4">📊 ESG Score Trend</h4><canvas id="mgr-esg-chart" height="180"></canvas></div>
-    <div class="card p-6"><h4 class="text-xs font-black text-slate-800 uppercase tracking-wider mb-4">📅 Attendance Trend</h4><canvas id="mgr-att-chart" height="180"></canvas></div>
-    <div class="card p-6"><h4 class="text-xs font-black text-slate-800 uppercase tracking-wider mb-4">✅ Task Completion</h4><canvas id="mgr-task-chart" height="180"></canvas></div>
-    <div class="card p-6"><h4 class="text-xs font-black text-slate-800 uppercase tracking-wider mb-4">🌳 CSR Participation</h4><canvas id="mgr-csr-chart" height="180"></canvas></div>
+    <div class="card p-6"><h4 class="text-xs font-black text-slate-800 uppercase tracking-wider mb-4">📊 ESG Score by Employee</h4><canvas id="mgr-esg-chart" height="180"></canvas></div>
+    <div class="card p-6"><h4 class="text-xs font-black text-slate-800 uppercase tracking-wider mb-4">📅 Attendance Trend (6 Months)</h4><canvas id="mgr-att-chart" height="180"></canvas></div>
+    <div class="card p-6"><h4 class="text-xs font-black text-slate-800 uppercase tracking-wider mb-4">✅ Task Completion Status</h4><canvas id="mgr-task-chart" height="180"></canvas></div>
+    <div class="card p-6"><h4 class="text-xs font-black text-slate-800 uppercase tracking-wider mb-4">🌳 CSR Event Participation</h4><canvas id="mgr-csr-chart" height="180"></canvas></div>
+  </div>
+  <!-- Team Growth Chart (full width) -->
+  <div class="card p-6">
+    <div class="flex items-center justify-between mb-4">
+      <div>
+        <h4 class="text-xs font-black text-slate-800 uppercase tracking-wider">📈 Team Growth & ESG Trajectory</h4>
+        <p class="text-[10px] text-slate-400 font-semibold mt-1">Monthly team ESG score, XP earned, and CSR participation over 6 months</p>
+      </div>
+      <span class="stat-chip bg-emerald-100 text-emerald-700">+12.4% Growth YoY</span>
+    </div>
+    <canvas id="mgr-growth-chart" height="100"></canvas>
+    <div class="grid grid-cols-3 gap-4 mt-4">
+      <div class="text-center p-3 bg-emerald-50 rounded-xl">
+        <span class="text-2xl font-black text-emerald-700">+14.2%</span>
+        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mt-1">ESG Growth</p>
+      </div>
+      <div class="text-center p-3 bg-blue-50 rounded-xl">
+        <span class="text-2xl font-black text-blue-700">+22.8%</span>
+        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mt-1">XP Growth</p>
+      </div>
+      <div class="text-center p-3 bg-purple-50 rounded-xl">
+        <span class="text-2xl font-black text-purple-700">+38%</span>
+        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mt-1">CSR Participation</p>
+      </div>
+    </div>
   </div>`;
   setTimeout(()=>{
     new Chart(document.getElementById('mgr-esg-chart'),{type:'bar',data:{labels:DEPT_EMPLOYEES.map(e=>e.name.split(' ')[0]),datasets:[{label:'ESG Score',data:DEPT_EMPLOYEES.map(e=>e.esg),backgroundColor:['#0F3C2C','#10b981','#3b82f6','#f59e0b']}]},options:{plugins:{legend:{display:false}}}});
     new Chart(document.getElementById('mgr-att-chart'),{type:'line',data:{labels:['May','Jun','Jul','Aug','Sep','Oct'],datasets:[{label:'Avg Attendance %',data:[90,91,93,92,94,94.2],borderColor:'#0F3C2C',fill:true,backgroundColor:'rgba(15,60,44,0.07)',tension:.4}]},options:{plugins:{legend:{display:false}}}});
     new Chart(document.getElementById('mgr-task-chart'),{type:'doughnut',data:{labels:['Completed','In Progress','Overdue'],datasets:[{data:[1,3,0],backgroundColor:['#10b981','#3b82f6','#ef4444']}]},options:{plugins:{legend:{position:'bottom',labels:{font:{size:10}}}}}});
     new Chart(document.getElementById('mgr-csr-chart'),{type:'bar',data:{labels:DEPT_EMPLOYEES.map(e=>e.name.split(' ')[0]),datasets:[{label:'Events Joined',data:DEPT_EMPLOYEES.map(e=>e.events),backgroundColor:'#10b981'}]},options:{plugins:{legend:{display:false}}}});
+    new Chart(document.getElementById('mgr-growth-chart'),{type:'line',data:{labels:['May','Jun','Jul','Aug','Sep','Oct'],datasets:[
+      {label:'ESG Score',data:[74,76,79,81,84,88],borderColor:'#0F3C2C',backgroundColor:'rgba(15,60,44,0.08)',fill:true,tension:.4,borderWidth:2.5},
+      {label:'XP (x100)',data:[95,108,120,132,148,168],borderColor:'#3b82f6',backgroundColor:'rgba(59,130,246,0.05)',fill:true,tension:.4,borderWidth:2.5},
+      {label:'CSR Events',data:[2,3,3,4,5,6],borderColor:'#10b981',backgroundColor:'rgba(16,185,129,0.05)',fill:true,tension:.4,borderWidth:2.5},
+    ]},options:{plugins:{legend:{position:'bottom',labels:{font:{size:10}}}},scales:{y:{min:0}}}});
   },100);
+}
+
+// =========================================================
+// MANAGER — TEAMS PAGE
+// =========================================================
+const TEAMS_DATA = [
+  {
+    name: 'Green Ops Alpha', rank: 1, esg: 88, carbon: 112, badge: '🏆', color: 'emerald',
+    lead: { name: 'David Chen', role: 'Team Lead', avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=80&h=80&fit=crop&crop=face', xp: 19800, esg: 88 },
+    members: [
+      { name: 'Elena Rodriguez', role: 'SR. Project Lead', avatar: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=60&h=60&fit=crop&crop=face', xp: 12450, esg: 82, task: 'ESG Data Audit Q4', status: 'In Progress', att: '94.2%' },
+      { name: 'Priya Nair', role: 'ESG Analyst', avatar: 'https://images.unsplash.com/photo-1551836022-d5d88e9218df?w=60&h=60&fit=crop&crop=face', xp: 14200, esg: 88, task: 'Carbon Offset Report', status: 'In Progress', att: '97.5%' },
+    ],
+    tasks: { total: 8, done: 5, inProgress: 3 }, events: 5, growth: '+14.2%'
+  },
+  {
+    name: 'Green Ops Beta', rank: 2, esg: 76, carbon: 198, badge: '🥈', color: 'blue',
+    lead: { name: 'Marcus Thorne', role: 'Team Lead', avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=80&h=80&fit=crop&crop=face', xp: 9800, esg: 76 },
+    members: [
+      { name: 'James Kowalski', role: 'Compliance Officer', avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=60&h=60&fit=crop&crop=face', xp: 6200, esg: 65, task: 'Policy Compliance Review', status: 'Pending', att: '85.3%' },
+    ],
+    tasks: { total: 5, done: 2, inProgress: 3 }, events: 2, growth: '+6.8%'
+  },
+  {
+    name: 'Green Ops Gamma', rank: 3, esg: 65, carbon: 248, badge: '🥉', color: 'amber',
+    lead: { name: 'Laura Kim', role: 'Team Lead', avatar: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=80&h=80&fit=crop&crop=face', xp: 7400, esg: 71 },
+    members: [],
+    tasks: { total: 3, done: 1, inProgress: 2 }, events: 1, growth: '+3.2%'
+  }
+];
+
+function buildMgrTeams() {
+  const el = document.getElementById('page-mgr-teams');
+  el.innerHTML = `
+  <!-- Header with logo -->
+  <div class="flex items-center gap-3">
+    <div class="w-10 h-10 bg-[#0F3C2C] rounded-2xl flex items-center justify-center shadow-md">
+      <svg class="w-6 h-6 text-emerald-400" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2ZM13 19.93C9.05 19.44 6 16.08 6 12C6 11.38 6.08 10.79 6.21 10.21L11 15V16C11 17.1 11.9 18 13 18V19.93ZM18.9 15.4C18.64 14.59 17.9 14 17 14H16V11C16 10.45 15.55 10 15 10H9V8H11C11.55 8 12 7.55 12 7V5H14C15.1 5 16 4.1 16 3V2.59C18.93 3.78 21 6.65 21 10C21 12.08 20.2 13.97 18.9 15.4Z" fill="currentColor"/>
+        <path d="M12 3C9 6 8.5 9.5 9 12C9.5 14.5 11 16.5 12 17C13.5 15.5 15.5 12 15.5 9.5C15.5 7 14.5 4.5 12 3Z" fill="#34D399" opacity="0.85"/>
+      </svg>
+    </div>
+    <div>
+      <h2 class="font-black text-slate-900 text-lg leading-tight">Team Management</h2>
+      <p class="text-[10px] text-emerald-700 font-bold uppercase tracking-widest">Team Leads, Members & Performance</p>
+    </div>
+  </div>
+
+  <!-- Top Rank Summary -->
+  <div class="grid grid-cols-3 gap-4">
+    ${TEAMS_DATA.map(t=>`<div class="card p-4 border-l-4 ${t.rank===1?'border-emerald-500':t.rank===2?'border-blue-400':'border-amber-400'}">
+      <div class="flex items-center justify-between mb-2">
+        <span class="text-2xl">${t.badge}</span>
+        <span class="stat-chip ${t.rank===1?'bg-emerald-100 text-emerald-700':t.rank===2?'bg-blue-100 text-blue-700':'bg-amber-100 text-amber-700'}">Rank #${t.rank}</span>
+      </div>
+      <h4 class="font-black text-slate-800 text-sm">${t.name}</h4>
+      <div class="grid grid-cols-2 gap-2 mt-2 text-[10px]">
+        <div><span class="text-slate-400 font-bold block">ESG Score</span><span class="font-black text-slate-800">${t.esg}/100</span></div>
+        <div><span class="text-slate-400 font-bold block">Growth</span><span class="font-black text-emerald-600">${t.growth}</span></div>
+        <div><span class="text-slate-400 font-bold block">Tasks Done</span><span class="font-black text-slate-800">${t.tasks.done}/${t.tasks.total}</span></div>
+        <div><span class="text-slate-400 font-bold block">CSR Events</span><span class="font-black text-blue-600">${t.events}</span></div>
+      </div>
+    </div>`).join('')}
+  </div>
+
+  <!-- Team Detail Cards -->
+  ${TEAMS_DATA.map(t=>`
+  <div class="card p-6 space-y-5">
+    <!-- Team Header -->
+    <div class="flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <span class="text-3xl">${t.badge}</span>
+        <div>
+          <h3 class="font-black text-slate-800 text-base">${t.name}</h3>
+          <div class="flex items-center gap-2 mt-0.5">
+            <span class="stat-chip ${t.esg>=80?'bg-emerald-100 text-emerald-700':t.esg>=70?'bg-blue-100 text-blue-700':'bg-amber-100 text-amber-700'}">ESG ${t.esg}/100</span>
+            <span class="stat-chip bg-slate-100 text-slate-600">Carbon ${t.carbon}t</span>
+            <span class="stat-chip bg-purple-100 text-purple-700">${t.growth} Growth</span>
+          </div>
+        </div>
+      </div>
+      <div class="text-right">
+        <div class="flex justify-between text-[10px] font-bold text-slate-500 mb-1"><span>Task Progress</span><span>${t.tasks.done}/${t.tasks.total}</span></div>
+        <div class="w-32">${progressBar(Math.round(t.tasks.done/t.tasks.total*100))}</div>
+      </div>
+    </div>
+
+    <!-- Team Lead -->
+    <div>
+      <h5 class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">👑 Team Lead</h5>
+      <div class="flex items-center gap-4 p-4 bg-gradient-to-r from-[#0F3C2C]/5 to-transparent rounded-2xl border border-[#0F3C2C]/10">
+        <img src="${t.lead.avatar}" class="w-14 h-14 rounded-2xl object-cover shadow-md">
+        <div class="flex-1">
+          <h4 class="font-black text-slate-800">${t.lead.name}</h4>
+          <p class="text-[10px] text-emerald-700 font-bold uppercase">${t.lead.role}</p>
+          <div class="flex gap-3 mt-2 text-[10px]">
+            <span class="font-bold text-slate-500">ESG: <span class="text-[#0F3C2C] font-black">${t.lead.esg}/100</span></span>
+            <span class="font-bold text-slate-500">XP: <span class="text-blue-600 font-black">${t.lead.xp.toLocaleString()}</span></span>
+          </div>
+        </div>
+        <span class="stat-chip bg-[#0F3C2C] text-white text-[10px]">Lead</span>
+      </div>
+    </div>
+
+    <!-- Members -->
+    ${t.members.length>0?`<div>
+      <h5 class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">👥 Members (${t.members.length})</h5>
+      <div class="space-y-3">
+        ${t.members.map(m=>`<div class="flex items-center gap-3 p-3 bg-slate-50 rounded-xl border hover:border-emerald-200 transition-all">
+          <img src="${m.avatar}" class="w-10 h-10 rounded-xl object-cover">
+          <div class="flex-1 min-w-0">
+            <div class="flex items-center gap-2">
+              <h5 class="font-bold text-xs text-slate-800">${m.name}</h5>
+              <span class="stat-chip bg-slate-100 text-slate-600 text-[9px]">${m.role}</span>
+            </div>
+            <p class="text-[10px] text-slate-400 font-semibold mt-0.5">Current: ${m.task}</p>
+            <div class="flex items-center gap-3 mt-1.5">${progressBar(m.status==='In Progress'?60:30)}<span class="text-[9px] text-slate-400 font-bold ml-1">${m.status}</span></div>
+          </div>
+          <div class="text-right space-y-1">
+            <div class="text-xs font-black text-[#0F3C2C]">${m.esg}/100</div>
+            <div class="text-[9px] text-slate-400 font-bold">ESG</div>
+            <span class="stat-chip bg-blue-50 text-blue-700 text-[9px]">${m.att}</span>
+          </div>
+        </div>`).join('')}
+      </div>
+    </div>`:'<div class="text-center py-4 text-slate-300 text-xs font-semibold border-2 border-dashed border-slate-100 rounded-xl">No members assigned yet</div>'}
+  </div>`).join('')}`;
 }
 
 // =========================================================
@@ -1348,15 +1813,145 @@ function buildAdmDashboard() {
   </div>`;
 }
 
+function openAddSectorModal() {
+  let m = document.getElementById('add-sector-modal');
+  if (m) m.remove();
+  m = document.createElement('div');
+  m.id = 'add-sector-modal';
+  m.className = 'fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4';
+  m.innerHTML = `
+  <div class="bg-white rounded-3xl max-w-md w-full shadow-2xl p-6 space-y-4">
+    <div class="flex items-center justify-between">
+      <div class="flex items-center gap-2">
+        <div class="w-8 h-8 bg-[#0F3C2C] rounded-xl flex items-center justify-center text-white">
+          <i class="fa fa-industry text-xs text-emerald-400"></i>
+        </div>
+        <h3 class="font-black text-slate-800 text-base">Add New Sector</h3>
+      </div>
+      <button onclick="document.getElementById('add-sector-modal').remove()" class="text-slate-400 hover:text-slate-700 w-8 h-8 flex items-center justify-center rounded-xl hover:bg-slate-100"><i class="fa fa-times"></i></button>
+    </div>
+    <div class="space-y-3">
+      <div>
+        <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Sector Name</label>
+        <input id="sec-name" type="text" placeholder="e.g. Research & Development" class="w-full border border-slate-200 rounded-xl px-3.5 py-2 text-xs focus:ring-1 focus:ring-[#0F3C2C] focus:outline-none">
+      </div>
+      <div>
+        <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Sector Head</label>
+        <input id="sec-head" type="text" placeholder="e.g. Dr. Aisha Patel" class="w-full border border-slate-200 rounded-xl px-3.5 py-2 text-xs focus:ring-1 focus:ring-[#0F3C2C] focus:outline-none">
+      </div>
+      <div class="grid grid-cols-2 gap-3">
+        <div>
+          <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Employees</label>
+          <input id="sec-emps" type="number" value="45" class="w-full border border-slate-200 rounded-xl px-3.5 py-2 text-xs focus:ring-1 focus:ring-[#0F3C2C] focus:outline-none">
+        </div>
+        <div>
+          <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Teams</label>
+          <input id="sec-teams" type="number" value="6" class="w-full border border-slate-200 rounded-xl px-3.5 py-2 text-xs focus:ring-1 focus:ring-[#0F3C2C] focus:outline-none">
+        </div>
+      </div>
+      <div class="grid grid-cols-2 gap-3">
+        <div>
+          <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">ESG Rating</label>
+          <select id="sec-esg" class="w-full border border-slate-200 rounded-xl px-3.5 py-2 text-xs focus:ring-1 focus:ring-[#0F3C2C] focus:outline-none">
+            <option>AAA</option><option>AA+</option><option>AA</option><option>A</option><option>B+</option><option>B</option><option>C</option><option>D</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Carbon Emissions (MT)</label>
+          <input id="sec-carbon" type="number" value="95" class="w-full border border-slate-200 rounded-xl px-3.5 py-2 text-xs focus:ring-1 focus:ring-[#0F3C2C] focus:outline-none">
+        </div>
+      </div>
+    </div>
+    <div class="flex gap-3">
+      <button onclick="document.getElementById('add-sector-modal').remove()" class="flex-1 border border-slate-200 text-slate-600 font-bold text-xs py-2.5 rounded-xl hover:bg-slate-50">Cancel</button>
+      <button onclick="saveNewSector()" class="flex-1 bg-[#0F3C2C] text-white font-bold text-xs py-2.5 rounded-xl hover:bg-[#09291D] transition-all">Add Sector</button>
+    </div>
+  </div>`;
+  document.body.appendChild(m);
+}
+
+function saveNewSector() {
+  const name = document.getElementById('sec-name').value.trim();
+  const head = document.getElementById('sec-head').value.trim();
+  const emps = parseInt(document.getElementById('sec-emps').value) || 0;
+  const teams = parseInt(document.getElementById('sec-teams').value) || 0;
+  const esg = document.getElementById('sec-esg').value;
+  const carbon = parseFloat(document.getElementById('sec-carbon').value) || 0;
+  if (!name || !head) { showToast('Please enter Sector Name and Head!', 'error'); return; }
+  let color = 'emerald';
+  let status = 'Good';
+  if (['C', 'D'].includes(esg)) { color = 'red'; status = 'Warning'; }
+  else if (['B', 'B+'].includes(esg)) { color = 'blue'; status = 'Stable'; }
+  else if (['AAA', 'AA+'].includes(esg)) { color = 'emerald'; status = 'Elite'; }
+  SECTORS.push({ name, head, employees: emps, teams, esg, carbon, status, color });
+  document.getElementById('add-sector-modal').remove();
+  showToast(`Sector "${name}" created successfully!`, 'success');
+  buildAdmSectors();
+}
+
+function viewSectorEsg(name) {
+  const s = SECTORS.find(x => x.name === name);
+  if (!s) return;
+  let e = 85, social = 80, g = 90;
+  if (s.esg.includes('AAA')) { e = 95; social = 92; g = 96; }
+  else if (s.esg.includes('C')) { e = 48; social = 60; g = 55; }
+  else if (s.esg.includes('B')) { e = 72; social = 75; g = 78; }
+  let m = document.getElementById('sector-esg-modal');
+  if (m) m.remove();
+  m = document.createElement('div');
+  m.id = 'sector-esg-modal';
+  m.className = 'fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4';
+  m.innerHTML = `
+  <div class="bg-white rounded-3xl max-w-md w-full shadow-2xl p-6 space-y-4">
+    <div class="flex items-center justify-between">
+      <div class="flex items-center gap-2">
+        <span class="text-2xl">🌱</span>
+        <h3 class="font-black text-slate-800 text-base">${name} — ESG Profile</h3>
+      </div>
+      <button onclick="document.getElementById('sector-esg-modal').remove()" class="text-slate-400 hover:text-slate-700 w-8 h-8 flex items-center justify-center rounded-xl hover:bg-slate-100"><i class="fa fa-times"></i></button>
+    </div>
+    <div class="space-y-4">
+      <div class="flex justify-between items-center bg-slate-50 p-3 rounded-xl border">
+        <span class="text-xs font-bold text-slate-500 uppercase">Overall ESG Rating</span>
+        <span class="stat-chip ${s.color==='emerald'?'bg-emerald-100 text-emerald-800':'bg-red-100 text-red-800'} font-black text-sm">${s.esg}</span>
+      </div>
+      <div class="space-y-3">
+        <div>
+          <div class="flex justify-between text-xs font-bold text-slate-600 mb-1"><span>Environmental (E)</span><span class="text-emerald-600 font-bold">${e}%</span></div>
+          ${progressBar(e, 'bg-emerald-500')}
+          <p class="text-[9px] text-slate-400 mt-1">Resource efficiency, carbon footprint mitigation, waste policy.</p>
+        </div>
+        <div>
+          <div class="flex justify-between text-xs font-bold text-slate-600 mb-1"><span>Social (S)</span><span class="text-blue-600 font-bold">${social}%</span></div>
+          ${progressBar(social, 'bg-blue-500')}
+          <p class="text-[9px] text-slate-400 mt-1">Employee safety, community volunteering, social equity.</p>
+        </div>
+        <div>
+          <div class="flex justify-between text-xs font-bold text-slate-600 mb-1"><span>Governance (G)</span><span class="text-amber-600 font-bold">${g}%</span></div>
+          ${progressBar(g, 'bg-amber-500')}
+          <p class="text-[9px] text-slate-400 mt-1">Policy audits, executive compensation transparency, safety rules compliance.</p>
+        </div>
+      </div>
+    </div>
+    <button onclick="document.getElementById('sector-esg-modal').remove()" class="w-full bg-[#0F3C2C] text-white font-bold text-xs py-2.5 rounded-xl hover:bg-[#09291D] transition-all">Close Profile</button>
+  </div>`;
+  document.body.appendChild(m);
+}
+
+function viewSectorAnalytics(name) {
+  showToast(`Loading analytical report for ${name}...`, 'info');
+  navigateTo('adm-analytics');
+}
+
 function buildAdmSectors() {
   const el = document.getElementById('page-adm-sectors');
   el.innerHTML = `
   <div class="flex justify-between items-center">
     ${sectionTitle('fa-industry','Sector Management')}
-    <button class="bg-[#0F3C2C] text-white font-bold text-xs px-4 py-2 rounded-xl hover:bg-[#09291D]"><i class="fa fa-plus mr-1"></i> Add Sector</button>
+    <button onclick="openAddSectorModal()" class="bg-[#0F3C2C] text-white font-bold text-xs px-4 py-2.5 rounded-xl hover:bg-[#09291D] flex items-center gap-1.5"><i class="fa fa-plus"></i> Add Sector</button>
   </div>
   <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-    ${SECTORS.map(s=>`<div class="card p-6 space-y-4 hover:-translate-y-1 transition-transform cursor-pointer">
+    ${SECTORS.map(s=>`<div class="card p-6 space-y-4 hover:-translate-y-1 transition-transform">
       <div class="flex justify-between items-start">
         <div>
           <h4 class="font-bold text-slate-800">${s.name}</h4>
@@ -1371,9 +1966,9 @@ function buildAdmSectors() {
         <div class="bg-slate-50 rounded-xl p-2.5"><span class="text-slate-400 block text-[9px] font-bold uppercase">Status</span><span class="font-black ${s.color==='emerald'?'text-emerald-700':'text-red-700'}">${s.status}</span></div>
       </div>
       <div class="border-t pt-3 flex gap-2">
-        <button class="flex-1 border border-slate-200 text-slate-600 font-bold text-[10px] py-1.5 rounded-lg hover:bg-slate-50">View Employees</button>
-        <button class="flex-1 border border-slate-200 text-slate-600 font-bold text-[10px] py-1.5 rounded-lg hover:bg-slate-50">View ESG</button>
-        <button class="flex-1 border border-slate-200 text-slate-600 font-bold text-[10px] py-1.5 rounded-lg hover:bg-slate-50">Analytics</button>
+        <button onclick="activeSectorFilter = '${s.name}'; navigateTo('adm-employees');" class="flex-1 border border-slate-200 text-slate-600 font-bold text-[10px] py-1.5 rounded-lg hover:bg-slate-50">View Employees</button>
+        <button onclick="viewSectorEsg('${s.name}')" class="flex-1 border border-slate-200 text-slate-600 font-bold text-[10px] py-1.5 rounded-lg hover:bg-slate-50">View ESG</button>
+        <button onclick="viewSectorAnalytics('${s.name}')" class="flex-1 border border-slate-200 text-slate-600 font-bold text-[10px] py-1.5 rounded-lg hover:bg-slate-50">Analytics</button>
       </div>
     </div>`).join('')}
   </div>`;
@@ -1381,13 +1976,20 @@ function buildAdmSectors() {
 
 function buildAdmEmployees() {
   const el = document.getElementById('page-adm-employees');
+  const filteredEmps = DEPT_EMPLOYEES.filter(e => {
+    const sect = getEmployeeSector(e.name);
+    return activeSectorFilter === 'All' || sect === activeSectorFilter;
+  });
   el.innerHTML = `
   <div class="card p-6">
     <div class="flex justify-between items-center mb-5">
       ${sectionTitle('fa-users','Organization Employee Overview')}
       <div class="flex gap-2 flex-wrap">
         <select class="border border-slate-200 rounded-xl px-3 py-2 text-xs focus:outline-none"><option>All Departments</option><option>IT Operations</option><option>Sales & Logistics</option></select>
-        <select class="border border-slate-200 rounded-xl px-3 py-2 text-xs focus:outline-none"><option>All Sectors</option>${SECTORS.map(s=>`<option>${s.name}</option>`).join('')}</select>
+        <select id="adm-emp-sector-filter" onchange="activeSectorFilter = this.value; buildAdmEmployees();" class="border border-slate-200 rounded-xl px-3 py-2 text-xs focus:outline-none">
+          <option value="All" ${activeSectorFilter === 'All' ? 'selected' : ''}>All Sectors</option>
+          ${SECTORS.map(s=>`<option value="${s.name}" ${activeSectorFilter === s.name ? 'selected' : ''}>${s.name}</option>`).join('')}
+        </select>
         <select class="border border-slate-200 rounded-xl px-3 py-2 text-xs focus:outline-none"><option>All ESG</option><option>80-100</option><option>60-79</option><option>Below 60</option></select>
       </div>
     </div>
@@ -1403,21 +2005,22 @@ function buildAdmEmployees() {
           <th class="py-3 px-4 text-left rounded-r-xl">Actions</th>
         </tr></thead>
         <tbody>
-          ${DEPT_EMPLOYEES.map(e=>`<tr class="border-b border-slate-50 hover:bg-slate-50/50">
+          ${filteredEmps.map(e=>`<tr class="border-b border-slate-50 hover:bg-slate-50/50">
             <td class="py-3 px-4"><div class="flex items-center gap-2">
               <img src="${e.avatar}" class="w-8 h-8 rounded-xl object-cover">
               <div><p class="font-bold text-slate-800">${e.name}</p><p class="text-[9px] text-slate-400 font-semibold">${e.id}</p></div>
             </div></td>
-            <td class="py-3 px-4 font-semibold text-slate-500">IT Operations / IT</td>
+            <td class="py-3 px-4 font-semibold text-slate-500">${e.team} / ${getEmployeeSector(e.name)}</td>
             <td class="py-3 px-4 font-bold ${parseFloat(e.att)>90?'text-emerald-600':'text-red-600'}">${e.att}</td>
             <td class="py-3 px-4"><div class="flex items-center gap-2"><div class="w-12">${progressBar(e.esg)}</div><span class="font-black text-slate-800">${e.esg}</span></div></td>
             <td class="py-3 px-4 font-black text-[#0F3C2C]">${e.xp.toLocaleString()}</td>
             <td class="py-3 px-4"><span class="stat-chip ${e.perf==='Outstanding'?'bg-purple-50 text-purple-700':e.perf==='Needs Improvement'?'bg-red-50 text-red-600':'bg-emerald-50 text-emerald-700'}">${e.perf}</span></td>
             <td class="py-3 px-4 flex gap-1">
-              <button class="border border-slate-200 text-slate-600 font-bold text-[9px] px-2 py-1 rounded-lg hover:bg-slate-50">View</button>
-              <button class="border border-slate-200 text-slate-600 font-bold text-[9px] px-2 py-1 rounded-lg hover:bg-slate-50">Edit</button>
+              <button onclick="showToast('Viewing detailed ESG record for ${e.name}', 'info')" class="border border-slate-200 text-slate-600 font-bold text-[9px] px-2 py-1 rounded-lg hover:bg-slate-50">View</button>
+              <button onclick="showToast('Editing capabilities are restricted in demo', 'warning')" class="border border-slate-200 text-slate-600 font-bold text-[9px] px-2 py-1 rounded-lg hover:bg-slate-50">Edit</button>
             </td>
           </tr>`).join('')}
+          ${filteredEmps.length === 0 ? `<tr><td colspan="7" class="text-center py-6 text-slate-400 font-semibold bg-slate-50 rounded-b-xl">No employees found matching current sector filter.</td></tr>` : ''}
         </tbody>
       </table>
     </div>
@@ -1446,6 +2049,58 @@ function buildAdmAnalytics() {
   },100);
 }
 
+function resolveAlert(title, btn) {
+  const a = ADMIN_ALERTS.find(x => x.title === title);
+  if (a) {
+    a.type = 'success';
+    a.icon = '🟢';
+    a.title = a.title.replace('Exceeded', 'Resolved').replace('Dropped', 'Restored').replace('Identified', 'Addressed');
+    a.msg = 'RESOLVED: ' + a.msg;
+    showToast('Alert resolved successfully!', 'success');
+    buildAdmAlerts();
+  }
+}
+
+function showAlertDetails(title) {
+  const a = ADMIN_ALERTS.find(x => x.title === title);
+  if (!a) return;
+  let m = document.getElementById('alert-details-modal');
+  if (m) m.remove();
+  m = document.createElement('div');
+  m.id = 'alert-details-modal';
+  m.className = 'fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4';
+  m.innerHTML = `
+  <div class="bg-white rounded-3xl max-w-md w-full shadow-2xl p-6 space-y-4">
+    <div class="flex items-center justify-between">
+      <div class="flex items-center gap-2">
+        <span class="text-2xl">${a.icon}</span>
+        <h3 class="font-black text-slate-800 text-base leading-tight">${a.title}</h3>
+      </div>
+      <button onclick="document.getElementById('alert-details-modal').remove()" class="text-slate-400 hover:text-slate-700 w-8 h-8 flex items-center justify-center rounded-xl hover:bg-slate-100"><i class="fa fa-times"></i></button>
+    </div>
+    <div class="space-y-3 text-xs text-slate-600">
+      <div class="bg-amber-50/50 text-slate-700 p-3.5 rounded-xl border border-amber-200">
+        <p class="font-bold mb-1">Issue Description:</p>
+        <p class="font-semibold leading-relaxed">${a.msg}</p>
+      </div>
+      <div class="grid grid-cols-2 gap-2">
+        <div class="bg-slate-50 p-2.5 rounded-xl"><span class="text-slate-400 block text-[9px] font-bold uppercase">Time Logged</span><span class="font-black text-slate-800">${a.time}</span></div>
+        <div class="bg-slate-50 p-2.5 rounded-xl"><span class="text-slate-400 block text-[9px] font-bold uppercase">Status</span><span class="font-black ${a.type==='critical'?'text-red-600':a.type==='warning'?'text-amber-600':'text-emerald-600'}">${a.type.toUpperCase()}</span></div>
+      </div>
+      <div class="bg-slate-50 p-3.5 rounded-xl">
+        <p class="font-bold text-slate-700">Mitigation & Action items:</p>
+        <ul class="list-disc list-inside mt-1.5 space-y-1 text-slate-500 font-semibold">
+          <li>Review sector operational practices with department managers.</li>
+          <li>Re-allocate resources or initiate carbon offsets if applicable.</li>
+          <li>Log resolution details and file compliance documentation.</li>
+        </ul>
+      </div>
+    </div>
+    <button onclick="document.getElementById('alert-details-modal').remove()" class="w-full bg-[#0F3C2C] text-white font-bold text-xs py-2.5 rounded-xl hover:bg-[#09291D] transition-all">Close Details</button>
+  </div>`;
+  document.body.appendChild(m);
+}
+
 function buildAdmAlerts() {
   const el = document.getElementById('page-adm-alerts');
   el.innerHTML = `
@@ -1469,8 +2124,12 @@ function buildAdmAlerts() {
         </div>
         <div class="flex items-center gap-2 shrink-0 ml-4">
           <small class="text-[10px] text-slate-400">${a.time}</small>
-          <button class="border border-slate-200 text-slate-600 font-bold text-[9px] px-2 py-1 rounded-lg hover:bg-slate-50">Resolve</button>
-          <button class="border border-slate-200 text-slate-600 font-bold text-[9px] px-2 py-1 rounded-lg hover:bg-slate-50">Details</button>
+          ${a.type !== 'success' ? `
+            <button onclick="resolveAlert('${a.title}')" class="border border-slate-200 text-slate-600 font-bold text-[9px] px-2 py-1 rounded-lg hover:bg-slate-50 hover:border-emerald-600 hover:text-emerald-600 transition-all">Resolve</button>
+          ` : `
+            <span class="text-[9px] font-bold text-emerald-600 bg-emerald-50 px-2 py-1 rounded-lg border border-emerald-100">Resolved ✅</span>
+          `}
+          <button onclick="showAlertDetails('${a.title}')" class="border border-slate-200 text-slate-600 font-bold text-[9px] px-2 py-1 rounded-lg hover:bg-slate-50 hover:border-[#0F3C2C] hover:text-[#0F3C2C] transition-all">Details</button>
         </div>
       </div>
     </div>`).join('')}

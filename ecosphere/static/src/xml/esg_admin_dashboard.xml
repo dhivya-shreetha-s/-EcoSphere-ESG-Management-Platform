@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="utf-8"?>
+<templates xml:space="preserve">
+    <t t-name="ecosphere.EsgAdminDashboard" owl="1">
+        <div class="esg-dashboard-container p-4" style="background-color: #f8fafc; min-height: 100vh; font-family: inherit;">
+            
+            <!-- Top KPI Cards Row -->
+            <div class="row mb-4">
+                <div class="col-md-3 col-sm-6 mb-3 mb-md-0">
+                    <div class="card shadow-sm border-0 rounded p-3 bg-white text-center">
+                        <span class="d-block fs-3 fw-bold text-emerald-600" t-out="state.score.score_overall.toFixed(1)"/>
+                        <small class="text-muted text-uppercase fw-semibold" style="font-size: 0.7rem;">Overall ESG Score</small>
+                    </div>
+                </div>
+                <div class="col-md-3 col-sm-6 mb-3 mb-md-0">
+                    <div class="card shadow-sm border-0 rounded p-3 bg-white text-center">
+                        <span class="d-block fs-3 fw-bold text-indigo-600" t-out="state.totalEmissions.toFixed(0) + ' MT'"/>
+                        <small class="text-muted text-uppercase fw-semibold" style="font-size: 0.7rem;">Carbon Emissions</small>
+                    </div>
+                </div>
+                <div class="col-md-3 col-sm-6 mb-3 mb-md-0">
+                    <div class="card shadow-sm border-0 rounded p-3 bg-white text-center">
+                        <span class="d-block fs-3 fw-bold text-sky-600" t-out="state.activeManagers"/>
+                        <small class="text-muted text-uppercase fw-semibold" style="font-size: 0.7rem;">Active Managers</small>
+                    </div>
+                </div>
+                <div class="col-md-3 col-sm-6">
+                    <div class="card shadow-sm border-0 rounded p-3 bg-white text-center">
+                        <span class="d-block fs-3 fw-bold text-amber-600" t-out="state.complianceRate.toFixed(1) + '%'"/>
+                        <small class="text-muted text-uppercase fw-semibold" style="font-size: 0.7rem;">Compliance Rate</small>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main section -->
+            <div class="row mb-4">
+                <!-- Circular Ring -->
+                <div class="col-md-4 mb-4 mb-md-0">
+                    <div class="card shadow-sm border-0 rounded p-4 bg-white h-100 d-flex flex-column align-items-center justify-content-center">
+                        <EsgScoreRing score="state.score.score_overall" label="'Organisation Score'"/>
+                    </div>
+                </div>
+                <!-- E/S/G category rollups -->
+                <div class="col-md-8">
+                    <div class="card shadow-sm border-0 rounded p-4 bg-white h-100">
+                        <h5 class="fw-bold text-slate-800 mb-3"><i class="fa fa-globe me-2"/>Org-Wide Performance</h5>
+                        <EsgCategoryChart envScore="state.score.score_env" socialScore="state.score.score_social" govScore="state.score.score_gov"/>
+                        <div t-if="state.score.explanation" class="mt-3 p-3 rounded bg-slate-50 border border-light">
+                            <small class="text-slate-600 italic"><i class="fa fa-magic text-indigo-500 me-2"/>Grok Insights: <span t-out="state.score.explanation"/></small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Config & Alerts -->
+            <div class="row">
+                <!-- Slider controllers for weights adjustment -->
+                <div class="col-md-6 mb-4">
+                    <div class="card shadow-sm border-0 rounded p-4 bg-white h-100">
+                        <h5 class="fw-bold text-slate-800 mb-3"><i class="fa fa-sliders text-indigo-500 me-2"/>ESG Score Weightage</h5>
+                        <div class="p-2 mb-3 bg-slate-50 rounded border">
+                            <small class="text-slate-600">Adjust the relative weights of the three pillars below and click Save &amp; Recompute to run calculations live.</small>
+                        </div>
+                        <t t-foreach="state.categories" t-as="cat" t-key="cat.id">
+                            <div class="mb-3">
+                                <div class="d-flex justify-content-between mb-1">
+                                    <span class="fw-semibold text-slate-700" t-out="cat.name"/>
+                                    <span class="fw-bold text-indigo-600" t-out="cat.weight.toFixed(1) + '%'"/>
+                                </div>
+                                <input type="range" class="form-range" min="1" max="100" step="1"
+                                       t-att-value="cat.weight"
+                                       t-on-input="(e) => this.onSliderChange(cat.id, e.target.value)"/>
+                            </div>
+                        </t>
+                        <button class="btn btn-indigo w-100 mt-2" t-on-click="updateWeights"><i class="fa fa-save me-2"/>Save &amp; Recompute Scores</button>
+                    </div>
+                </div>
+
+                <!-- Org alerts -->
+                <div class="col-md-6 mb-4">
+                    <div class="card shadow-sm border-0 rounded p-4 bg-white h-100">
+                        <h5 class="fw-bold text-slate-800 mb-3"><i class="fa fa-exclamation-circle text-danger-500 me-2"/>Org-Wide Risk Alerts</h5>
+                        <div t-if="state.alerts.length == 0" class="text-center py-4">
+                            <i class="fa fa-circle-check fs-2 text-emerald-400 mb-2"/>
+                            <p class="text-muted m-0">No active alerts organization-wide.</p>
+                        </div>
+                        <t t-else="">
+                            <t t-foreach="state.alerts" t-as="alert" t-key="alert.id">
+                                <EsgAlertCard alert="alert" onUpdate="() => this.loadData()"/>
+                            </t>
+                        </t>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Floating AI chat -->
+            <EsgAiChatPanel role="'admin'"/>
+
+        </div>
+    </t>
+</templates>

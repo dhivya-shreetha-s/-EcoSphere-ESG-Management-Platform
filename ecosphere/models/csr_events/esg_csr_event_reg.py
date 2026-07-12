@@ -2,9 +2,8 @@
 """
 esg.csr.event.registration — Employee registration for a CSR event.
 
-State transitions:
-  registered → attended  (confirmed by manager post-event; triggers XP in Phase 5)
-  registered → cancelled  (employee withdraws or event cancelled)
+Handles append-only gamification ledger writes (anti-gaming design) when state
+transitions to 'attended'.
 """
 from odoo import api, fields, models
 from odoo.exceptions import ValidationError
@@ -70,3 +69,24 @@ class EsgCsrEventRegistration(models.Model):
         for rec in self:
             if rec.hours_attended < 0:
                 raise ValidationError('Hours attended cannot be negative.')
+
+    # ------------------------------------------------------------------ #
+    # Phase 5: Gamification triggers & anti-double-award checks          #
+    # ------------------------------------------------------------------ #
+    def write(self, vals):
+        """Trigger XP transaction log write when registration is marked Attended."""
+        if 'state' in vals and vals['state'] == 'attended':
+            for reg in self:
+                if reg.state != 'attended' and not reg.xp_granted:
+                    # Write to append-only ledger
+                    self.env['esg.xp.ledger'].create({
+                        'employee_id': reg.employee_id.id,
+                        'delta_xp': reg.event_id.xp_award,
+                        'reason': 'event_attended',
+                        'reference_model': 'esg.csr.event.registration',
+                        'reference_id': reg.id,
+                        'verified_by_data': True,
+                    })
+                    # Set flag locally in vals
+                    vals['xp_granted'] = True
+        return super(EsgCsrEventRegistration, self).write(vals)

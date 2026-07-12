@@ -2,22 +2,9 @@
 """
 esg.xp.ledger — Immutable transaction log for gamification XP.
 
-DESIGN PRINCIPLE (anti-gaming, audit trail):
-  - Total XP is ALWAYS computed as SUM(delta_xp) on this ledger.
-  - It is NEVER stored as a cached integer on hr.employee.
-  - Reversals are first-class entries (delta_xp < 0, reason='reversal').
-  - `verified_by_data` = True means the XP delta was triggered by a confirmed
-    real-data change (e.g. metric threshold crossed, event attendance confirmed).
-    False means manually granted (admin only) — these are flagged for audit.
-  - Records in this table are append-only. No update/delete allowed for non-admin.
-
-Leaderboard query in Phase 5:
-  SELECT employee_id, SUM(delta_xp) AS total_xp
-  FROM esg_xp_ledger
-  GROUP BY employee_id
-  ORDER BY total_xp DESC
+Contains the live leaderboard aggregator logic.
 """
-from odoo import fields, models
+from odoo import api, fields, models
 
 
 class EsgXpLedger(models.Model):
@@ -76,3 +63,44 @@ class EsgXpLedger(models.Model):
         default=fields.Datetime.now,
         index=True,
     )
+
+    # ------------------------------------------------------------------ #
+    # Phase 5: Leaderboard live aggregation                               #
+    # ------------------------------------------------------------------ #
+    @api.model
+    def get_leaderboard(self, scope, target_id=False, limit=10):
+        """
+        Aggregate ledger delta_xp sums grouped by employee.
+        
+        :param scope: Selection ('employee', 'department', 'sector', 'org')
+        :param target_id: ID of the corresponding target record
+        :param limit: Integer
+        :return: List of dicts: [{'rank': 1, 'employee_name': '...', 'xp': 250}]
+        """
+        domain = []
+        if scope == 'department' and target_id:
+            domain.append(('employee_id.department_id', '=', target_id))
+        elif scope == 'sector' and target_id:
+            domain.append(('employee_id.department_id.esg_sector_id', '=', target_id))
+
+        # Query read_group
+        groups = self.read_group(
+            domain=domain,
+            fields=['employee_id', 'delta_xp:sum'],
+            groupby=['employee_id'],
+            orderby='delta_xp desc',
+            limit=limit
+        )
+
+        leaderboard = []
+        for i, group in enumerate(groups, start=1):
+            emp = group['employee_id']
+            if emp:
+                leaderboard.append({
+                    'rank': i,
+                    'employee_id': emp[0],
+                    'employee_name': emp[1],
+                    'xp': group['delta_xp'],
+                })
+
+        return leaderboard

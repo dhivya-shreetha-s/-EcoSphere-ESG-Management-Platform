@@ -378,6 +378,10 @@ let PENDING_REGISTRATIONS = [
   { id: 1, name: 'Anoop Kumar', email: 'anoop@ecosphere.com', pass: 'AnoopEco123!', dept: 'IT Operations', team: 'Green Ops Beta' }
 ];
 
+let PENDING_EVENT_REQUESTS = [
+  { id: 1, employeeName: 'Elena Rodriguez', team: 'Green Ops Alpha', avatar: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=60&h=60&fit=crop&crop=face', eventId: 3, eventName: 'Blood Donation Camp' }
+];
+
 const EMP_CHALLENGES = [
   { name:'Zero Waste Week', xp:200, progress:70, status:'Active', deadline:'Nov 10' },
   { name:'Cycle to Work', xp:150, progress:100, status:'Completed', deadline:'Oct 25' },
@@ -570,6 +574,14 @@ function initApp() {
   document.getElementById('app-shell').classList.remove('hidden');
   document.getElementById('chat-fab').classList.remove('hidden');
 
+  // Sync registeredEvents with current user's actual registrations
+  registeredEvents.clear();
+  Object.keys(EVENT_REGISTRATIONS).forEach(eventId => {
+    if (EVENT_REGISTRATIONS[eventId].some(x => x.name === currentUser.name)) {
+      registeredEvents.add(parseInt(eventId));
+    }
+  });
+
   // Header
   document.getElementById('hdr-avatar').src = currentUser.avatar;
   document.getElementById('hdr-name').textContent = currentUser.name;
@@ -732,6 +744,18 @@ function alertCard(a) {
 }
 function eventCard(e, registered) {
   const reg = registeredEvents.has(e.id);
+  const requested = PENDING_EVENT_REQUESTS.some(r => r.employeeName === currentUser.name && r.eventId === e.id);
+
+  let btnText = 'Register Now';
+  let btnClass = 'bg-[#0F3C2C] text-white hover:bg-[#09291D]';
+  if (reg) {
+    btnText = 'Cancel Registration';
+    btnClass = 'bg-red-50 text-red-600 border border-red-200 hover:bg-red-100';
+  } else if (requested) {
+    btnText = 'Requested (Pending Approval)';
+    btnClass = 'bg-amber-50 text-amber-700 border border-amber-200 hover:bg-amber-100';
+  }
+
   return `<div class="card overflow-hidden hover:-translate-y-1 transition-transform">
     <img src="${e.img}" class="w-full h-36 object-cover">
     <div class="p-4 space-y-3">
@@ -746,8 +770,8 @@ function eventCard(e, registered) {
         <span class="${e.slots < 10 ? 'text-red-500':'text-emerald-600'}">${e.slots} slots left</span>
       </div>
       <button onclick="toggleEventReg(${e.id},this)"
-        class="w-full py-2 rounded-xl font-bold text-xs transition-all ${reg?'bg-red-50 text-red-600 border border-red-200 hover:bg-red-100':'bg-[#0F3C2C] text-white hover:bg-[#09291D]'}">
-        ${reg ? 'Cancel Registration' : 'Register Now'}
+        class="w-full py-2 rounded-xl font-bold text-xs transition-all ${btnClass}">
+        ${btnText}
       </button>
     </div>
   </div>`;
@@ -756,6 +780,8 @@ function toggleEventReg(id, btn) {
   const e = CSR_EVENTS.find(x => x.id === id);
   if (!e) return;
   const reg = registeredEvents.has(id);
+  const requested = PENDING_EVENT_REQUESTS.some(r => r.employeeName === currentUser.name && r.eventId === id);
+
   if (reg) {
     registeredEvents.delete(id);
     e.slots++;
@@ -764,37 +790,43 @@ function toggleEventReg(id, btn) {
       EVENT_REGISTRATIONS[id] = EVENT_REGISTRATIONS[id].filter(x => x.name !== currentUser.name);
     }
     showToast(`Deregistered from: ${e.name}`, 'info');
+  } else if (requested) {
+    PENDING_EVENT_REQUESTS = PENDING_EVENT_REQUESTS.filter(r => !(r.employeeName === currentUser.name && r.eventId === id));
+    showToast(`Cancelled registration request for: ${e.name}`, 'info');
   } else {
     if (e.slots <= 0) {
       showToast(`No slots remaining for this event!`, 'error');
       return;
     }
-    registeredEvents.add(id);
-    e.slots--;
-    e.participants++;
-    if (!EVENT_REGISTRATIONS[id]) EVENT_REGISTRATIONS[id] = [];
-    if (!EVENT_REGISTRATIONS[id].some(x => x.name === currentUser.name)) {
-      EVENT_REGISTRATIONS[id].push({ name: currentUser.name, team: currentUser.team || 'Green Ops Alpha', avatar: currentUser.avatar });
-    }
-    showToast(`Registered for: ${e.name}`, 'success');
+    const req = {
+      id: PENDING_EVENT_REQUESTS.length > 0 ? Math.max(...PENDING_EVENT_REQUESTS.map(r=>r.id)) + 1 : 1,
+      employeeName: currentUser.name,
+      team: currentUser.team || 'Green Ops Alpha',
+      avatar: currentUser.avatar || 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=60&h=60&fit=crop&crop=face',
+      eventId: id,
+      eventName: e.name
+    };
+    PENDING_EVENT_REQUESTS.push(req);
+    showToast(`Registration request for "${e.name}" sent to Manager!`, 'success');
   }
+
+  // Re-build active page to show dynamic state immediately
+  const activePage = document.querySelector('.page.active');
+  if (activePage) {
+    const pageId = activePage.id.replace('page-', '');
+    buildPage(pageId);
+  }
+
   // Add a new notification
   const newNotif = {
     icon: '🌱',
-    msg: registeredEvents.has(id) ? `Successfully registered for ${e.name}` : `Cancelled registration for ${e.name}`,
+    msg: reg ? `Cancelled registration for ${e.name}` : (requested ? `Cancelled registration request for ${e.name}` : `Sent registration request for ${e.name}`),
     time: 'Just now',
     unread: true
   };
   if (NOTIFICATIONS_DATA[currentUser.role]) {
     NOTIFICATIONS_DATA[currentUser.role].unshift(newNotif);
     buildNotifications();
-  }
-  
-  // Re-build active page to show dynamic state immediately
-  const activePage = document.querySelector('.page.active');
-  if (activePage) {
-    const pageId = activePage.id.replace('page-', '');
-    buildPage(pageId);
   }
 }
 
@@ -1597,6 +1629,33 @@ function buildMgrEvents() {
     ${kpiCard('fa-users','Total Registrations',CSR_EVENTS.reduce((s,e)=>s+e.participants,0),'Across all events','text-blue-600')}
     ${kpiCard('fa-door-open','Available Slots',CSR_EVENTS.reduce((s,e)=>s+e.slots,0),'Remaining','text-amber-600')}
   </div>
+
+  <!-- Pending Event Registration Requests Card -->
+  ${PENDING_EVENT_REQUESTS.length > 0 ? `
+  <div class="card p-6 space-y-4 border-2 border-dashed border-[#0F3C2C]/20 bg-emerald-50/10 animate-pulse">
+    <div class="flex justify-between items-center">
+      ${sectionTitle('fa-user-clock','Pending Event Registrations')}
+      <span class="stat-chip bg-amber-100 text-amber-800 font-bold">${PENDING_EVENT_REQUESTS.length} Pending Approval</span>
+    </div>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      ${PENDING_EVENT_REQUESTS.map(r => `
+        <div class="p-4 bg-white rounded-2xl border flex items-center justify-between shadow-sm">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 bg-slate-100 rounded-xl flex items-center justify-center text-slate-500 font-black text-sm">${r.employeeName[0]}</div>
+            <div>
+              <p class="font-bold text-xs text-slate-800">${r.employeeName}</p>
+              <p class="text-[9px] text-slate-400 font-semibold">${r.team} · Requested: <span class="text-[#0F3C2C] font-bold">${r.eventName}</span></p>
+            </div>
+          </div>
+          <div class="flex gap-2">
+            <button onclick="approveEventRegistration(${r.id})" class="bg-[#0F3C2C] text-white text-[10px] font-black px-3 py-1.5 rounded-lg hover:bg-[#09291D] transition-all">Approve</button>
+            <button onclick="rejectEventRegistration(${r.id})" class="border border-red-200 text-red-600 text-[10px] font-black px-3 py-1.5 rounded-lg hover:bg-red-50 transition-all">Reject</button>
+          </div>
+        </div>
+      `).join('')}
+    </div>
+  </div>` : ''}
+
   <!-- Events grid -->
   <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
     ${CSR_EVENTS.map(e=>`<div class="card overflow-hidden">
@@ -2879,6 +2938,61 @@ function approveEvent(id, btn) {
   btn.disabled = true;
   btn.textContent = 'Approved ✅';
   btn.className = 'bg-emerald-100 text-emerald-800 text-[10px] font-black px-3 py-1.5 rounded-lg cursor-not-allowed';
+}
+
+function approveEventRegistration(reqId) {
+  const req = PENDING_EVENT_REQUESTS.find(r => r.id === reqId);
+  if (!req) return;
+
+  const eventId = req.eventId;
+  const e = CSR_EVENTS.find(x => x.id === eventId);
+  if (e) {
+    if (e.slots <= 0) {
+      showToast(`No slots remaining for this event!`, 'error');
+      return;
+    }
+    e.slots--;
+    e.participants++;
+    
+    if (!EVENT_REGISTRATIONS[eventId]) EVENT_REGISTRATIONS[eventId] = [];
+    if (!EVENT_REGISTRATIONS[eventId].some(x => x.name === req.employeeName)) {
+      EVENT_REGISTRATIONS[eventId].push({ name: req.employeeName, team: req.team, avatar: req.avatar });
+    }
+    showToast(`Approved registration of ${req.employeeName} for ${e.name}!`, 'success');
+
+    const newNotif = {
+      icon: '✅',
+      msg: `Manager approved your registration for event: ${e.name}`,
+      time: 'Just now',
+      unread: true
+    };
+    if (NOTIFICATIONS_DATA['employee']) {
+      NOTIFICATIONS_DATA['employee'].unshift(newNotif);
+    }
+  }
+
+  PENDING_EVENT_REQUESTS = PENDING_EVENT_REQUESTS.filter(r => r.id !== reqId);
+  buildPage('mgr-events');
+}
+
+function rejectEventRegistration(reqId) {
+  const req = PENDING_EVENT_REQUESTS.find(r => r.id === reqId);
+  if (!req) return;
+
+  showToast(`Rejected registration request of ${req.employeeName} for event.`, 'info');
+
+  const newNotif = {
+    icon: '❌',
+    msg: `Manager declined your registration for event: ${req.eventName}`,
+    time: 'Just now',
+    unread: true
+  };
+  if (NOTIFICATIONS_DATA['employee']) {
+    NOTIFICATIONS_DATA['employee'].unshift(newNotif);
+  }
+
+  PENDING_EVENT_REQUESTS = PENDING_EVENT_REQUESTS.filter(r => r.id !== reqId);
+  buildPage('mgr-events');
 }
 
 function approveReward(empId, btn) {

@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<templates xml:space="preserve">
+    <t t-name="ecosphere.EsgAiChatPanel" owl="1">
+        <div class="esg-ai-chat-panel-container position-fixed" style="bottom: 20px; right: 20px; z-index: 1050; font-family: inherit;">
+            
+            <!-- Toggle Button -->
+            <button class="btn btn-primary rounded-circle shadow-lg d-flex align-items-center justify-content-center"
+                    style="width: 56px; height: 56px;"
+                    t-on-click="toggleOpen">
+                <i t-att-class="state.open ? 'fa fa-times fs-4' : 'fa fa-commenting fs-4'"/>
+            </button>
+
+            <!-- Chat Window -->
+            <div t-if="state.open" class="card shadow-lg position-absolute rounded border-0"
+                 style="bottom: 70px; right: 0; width: 350px; height: 450px; overflow: hidden; background-color: #ffffff; display: flex; flex-direction: column;">
+                
+                <!-- Header -->
+                <div class="card-header bg-slate-900 text-white d-flex align-items-center justify-content-between py-3">
+                    <div class="d-flex align-items-center">
+                        <i class="fa fa-magic text-emerald-400 me-2"/>
+                        <div>
+                            <h6 class="m-0 fw-bold">AI ESG Assistant</h6>
+                            <small class="text-emerald-400 italic">Powered by Grok 4.5</small>
+                        </div>
+                    </div>
+                    <button class="btn btn-sm text-white" t-on-click="toggleOpen"><i class="fa fa-times"/></button>
+                </div>
+
+                <!-- Chat Body (Message logs) -->
+                <div class="card-body flex-grow-1 p-3 overflow-auto" style="background-color: #f8fafc;">
+                    <t t-foreach="state.history" t-as="msg" t-key="msg_index">
+                        <div t-att-class="'d-flex mb-3 ' + (msg.role == 'user' ? 'justify-content-end' : 'justify-content-start')">
+                            <div t-att-class="'rounded p-2 max-w-75 shadow-sm ' + (msg.role == 'user' ? 'bg-indigo-600 text-white' : 'bg-white text-slate-800 border border-light')" style="font-size: 0.9rem;">
+                                <span t-out="msg.content"/>
+                            </div>
+                        </div>
+                    </t>
+                    
+                    <!-- Loading Spinner -->
+                    <div t-if="state.loading" class="d-flex justify-content-start mb-3">
+                        <div class="bg-white border border-light rounded p-2 d-flex align-items-center">
+                            <i class="fa fa-spinner fa-spin text-muted me-2"/>
+                            <small class="text-muted">Grok is thinking…</small>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Suggestions chips -->
+                <div class="p-2 border-top bg-white d-flex flex-wrap gap-1" style="font-size: 0.8rem;">
+                    <t t-foreach="suggestionChips" t-as="chip" t-key="chip_index">
+                        <span class="badge rounded bg-slate-100 text-slate-700 p-2 cursor-pointer border hover-bg-slate-200"
+                              t-on-click="() => this.sendMessage(chip)" t-out="chip"/>
+                    </t>
+                </div>
+
+                <!-- Input area -->
+                <div class="p-2 border-top bg-white d-flex align-items-center">
+                    <input type="text" class="form-control form-control-sm me-2" placeholder="Ask AI anything…"
+                           t-model="state.message" t-on-keydown="(e) => e.key === 'Enter' &amp;&amp; this.sendMessage()"/>
+                    <button class="btn btn-sm btn-indigo" t-on-click="() => this.sendMessage()"><i class="fa fa-paper-plane"/></button>
+                </div>
+
+            </div>
+        </div>
+    </t>
+</templates>

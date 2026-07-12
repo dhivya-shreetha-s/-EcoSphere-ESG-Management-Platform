@@ -4,58 +4,83 @@
 
         <!--
         ================================================================
-        TOP-LEVEL ESG APPLICATION MENU
-        Odoo's native group-based menu visibility handles role hiding —
-        no custom router needed (Section 6 of the master prompt).
+        CLIENT ACTIONS DEFINITIONS
+        Binds the OWL client action tags to Odoo actions.
+        ================================================================
+        -->
 
-        Phase 4 will replace the stub window actions below with real
-        OWL dashboard client actions.
+        <record id="action_employee_dashboard" model="ir.actions.client">
+            <field name="name">ESG Dashboard</field>
+            <field name="tag">ecosphere.action_employee_dashboard</field>
+        </record>
+
+        <record id="action_manager_dashboard" model="ir.actions.client">
+            <field name="name">Department ESG Summary</field>
+            <field name="tag">ecosphere.action_manager_dashboard</field>
+        </record>
+
+        <record id="action_admin_dashboard" model="ir.actions.client">
+            <field name="name">Executive ESG Dashboard</field>
+            <field name="tag">ecosphere.action_admin_dashboard</field>
+        </record>
+
+        <!--
+        ================================================================
+        TOP-LEVEL ESG APPLICATION MENU
+        Native Odoo group-based routing (Section 6 of the master prompt).
         ================================================================
         -->
 
         <menuitem
             id="menu_ecosphere_root"
-            name="ESG"
+            name="EcoSphere"
             sequence="95"
-            web_icon="ecosphere,static/description/icon.png"
             groups="ecosphere.group_esg_employee"/>
 
-        <!-- ── Dashboard ─────────────────────────────────────────── -->
+        <!-- ── Dashboard Client Actions (scoped by group) ────────── -->
         <menuitem
-            id="menu_ecosphere_dashboard"
+            id="menu_ecosphere_dashboard_emp"
             name="Dashboard"
             parent="menu_ecosphere_root"
             sequence="10"
-            action="action_esg_score_list"
+            action="action_employee_dashboard"
             groups="ecosphere.group_esg_employee"/>
 
-        <!-- ── Events ────────────────────────────────────────────── -->
+        <menuitem
+            id="menu_ecosphere_dashboard_mgr"
+            name="Manager Dashboard"
+            parent="menu_ecosphere_root"
+            sequence="11"
+            action="action_manager_dashboard"
+            groups="ecosphere.group_esg_manager"/>
+
+        <menuitem
+            id="menu_ecosphere_dashboard_adm"
+            name="Admin Dashboard"
+            parent="menu_ecosphere_root"
+            sequence="12"
+            action="action_admin_dashboard"
+            groups="ecosphere.group_esg_admin"/>
+
+        <!-- ── Events (shared list view) ────────────────────────── -->
         <menuitem
             id="menu_ecosphere_events"
-            name="Events"
+            name="CSR Events"
             parent="menu_ecosphere_root"
             sequence="20"
             action="action_esg_csr_event_list"
             groups="ecosphere.group_esg_employee"/>
 
-        <!-- ── Alerts ────────────────────────────────────────────── -->
+        <!-- ── Alerts Center (shared list view) ──────────────────── -->
         <menuitem
             id="menu_ecosphere_alerts"
-            name="Alerts"
+            name="Alerts Center"
             parent="menu_ecosphere_root"
             sequence="30"
             action="action_esg_alert_list"
             groups="ecosphere.group_esg_employee"/>
 
-        <!-- ── Reports (P2 — placeholder) ────────────────────────── -->
-        <menuitem
-            id="menu_ecosphere_reports"
-            name="Reports"
-            parent="menu_ecosphere_root"
-            sequence="40"
-            groups="ecosphere.group_esg_manager"/>
-
-        <!-- ── Settings ──────────────────────────────────────────── -->
+        <!-- ── Settings Menu (admin only) ────────────────────────── -->
         <menuitem
             id="menu_ecosphere_settings"
             name="Settings"
@@ -63,7 +88,6 @@
             sequence="90"
             groups="ecosphere.group_esg_admin"/>
 
-        <!-- Settings sub-menus (admin only) -->
         <menuitem
             id="menu_ecosphere_sectors"
             name="Sectors"

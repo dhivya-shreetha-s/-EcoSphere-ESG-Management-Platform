@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<templates xml:space="preserve">
+    <t t-name="ecosphere.EsgCategoryChart" owl="1">
+        <div class="esg-category-chart-container w-100 py-2">
+            <!-- Environmental -->
+            <div class="mb-3">
+                <div class="d-flex justify-content-between mb-1">
+                    <span class="fw-medium text-emerald-700"><i class="fa fa-leaf me-2"/>Environmental</span>
+                    <span class="fw-bold text-emerald-800" t-out="props.envScore.toFixed(1) + '/100'"/>
+                </div>
+                <div class="progress" style="height: 10px; background-color: #f1f5f9;">
+                    <div class="progress-bar bg-emerald-500 rounded" role="progressbar"
+                         t-attf-style="width: {{props.envScore}}%; transition: width 0.6s ease-out;"/>
+                </div>
+            </div>
+            <!-- Social -->
+            <div class="mb-3">
+                <div class="d-flex justify-content-between mb-1">
+                    <span class="fw-medium text-sky-700"><i class="fa fa-users me-2"/>Social</span>
+                    <span class="fw-bold text-sky-800" t-out="props.socialScore.toFixed(1) + '/100'"/>
+                </div>
+                <div class="progress" style="height: 10px; background-color: #f1f5f9;">
+                    <div class="progress-bar bg-sky-500 rounded" role="progressbar"
+                         t-attf-style="width: {{props.socialScore}}%; transition: width 0.6s ease-out;"/>
+                </div>
+            </div>
+            <!-- Governance -->
+            <div class="mb-1">
+                <div class="d-flex justify-content-between mb-1">
+                    <span class="fw-medium text-amber-700"><i class="fa fa-balance-scale me-2"/>Governance</span>
+                    <span class="fw-bold text-amber-800" t-out="props.govScore.toFixed(1) + '/100'"/>
+                </div>
+                <div class="progress" style="height: 10px; background-color: #f1f5f9;">
+                    <div class="progress-bar bg-amber-500 rounded" role="progressbar"
+                         t-attf-style="width: {{props.govScore}}%; transition: width 0.6s ease-out;"/>
+                </div>
+            </div>
+        </div>
+    </t>
+</templates>

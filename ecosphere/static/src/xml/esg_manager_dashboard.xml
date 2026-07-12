@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="utf-8"?>
+<templates xml:space="preserve">
+    <t t-name="ecosphere.EsgManagerDashboard" owl="1">
+        <div class="esg-dashboard-container p-4" style="background-color: #f8fafc; min-height: 100vh; font-family: inherit;">
+            
+            <!-- Top Header summary -->
+            <div class="row mb-4">
+                <div class="col-12">
+                    <div class="card shadow-sm border-0 rounded p-4 d-flex flex-row align-items-center justify-content-between bg-white">
+                        <div class="d-flex align-items-center">
+                            <div class="rounded-circle bg-sky-50 d-flex align-items-center justify-content-center me-3" style="width: 64px; height: 64px;">
+                                <i class="fa fa-briefcase fs-2 text-sky-500"/>
+                            </div>
+                            <div>
+                                <h4 class="m-0 fw-bold text-slate-800" t-out="state.department.name || 'ESG Department'"/>
+                                <span class="text-muted">Manager Summary &amp; Team Analytics</span>
+                            </div>
+                        </div>
+                        <div class="d-flex gap-4">
+                            <div class="text-center">
+                                <span class="d-block fs-4 fw-bold text-sky-600" t-out="state.headcount || 0"/>
+                                <small class="text-muted text-uppercase fw-semibold" style="font-size: 0.75rem;">Total Employees</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Scores and progress indicators -->
+            <div class="row mb-4">
+                <!-- Circular Ring -->
+                <div class="col-md-4 mb-4 mb-md-0">
+                    <div class="card shadow-sm border-0 rounded p-4 bg-white h-100 d-flex flex-column align-items-center justify-content-center">
+                        <EsgScoreRing score="state.score.score_overall" label="'Department ESG Score'"/>
+                    </div>
+                </div>
+                <!-- E/S/G category rollups -->
+                <div class="col-md-8">
+                    <div class="card shadow-sm border-0 rounded p-4 bg-white h-100">
+                        <h5 class="fw-bold text-slate-800 mb-3"><i class="fa fa-chart-line me-2"/>Department Performance</h5>
+                        <EsgCategoryChart envScore="state.score.score_env" socialScore="state.score.score_social" govScore="state.score.score_gov"/>
+                        <div t-if="state.score.explanation" class="mt-3 p-3 rounded bg-slate-50 border border-light">
+                            <small class="text-slate-600 italic"><i class="fa fa-magic text-indigo-500 me-2"/>Grok Insights: <span t-out="state.score.explanation"/></small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Grid: Team Directory & Alerts -->
+            <div class="row">
+                <!-- Team list (data minimization) -->
+                <div class="col-md-6 mb-4">
+                    <div class="card shadow-sm border-0 rounded p-4 bg-white h-100">
+                        <h5 class="fw-bold text-slate-800 mb-3"><i class="fa fa-address-book text-indigo-500 me-2"/>Team Directory</h5>
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle m-0" style="font-size: 0.9rem;">
+                                <thead>
+                                    <tr class="text-muted" style="font-size: 0.8rem;">
+                                        <th class="border-0">Employee Name</th>
+                                        <th class="border-0">Role</th>
+                                        <th class="border-0 text-end">ESG Score</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <t t-foreach="state.employees" t-as="emp" t-key="emp.id">
+                                        <tr>
+                                            <td class="fw-bold text-slate-800" t-out="emp.name"/>
+                                            <td class="text-muted" t-out="emp.job_title"/>
+                                            <td class="text-end fw-bold">
+                                                <span t-attf-class="badge px-2 py-1 rounded {{emp.score &gt;= 70 ? 'bg-emerald-50 text-emerald-700' : 'bg-amber-50 text-amber-700'}}" t-out="emp.score.toFixed(1)"/>
+                                            </td>
+                                        </tr>
+                                    </t>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Active alerts -->
+                <div class="col-md-6 mb-4">
+                    <div class="card shadow-sm border-0 rounded p-4 bg-white h-100">
+                        <h5 class="fw-bold text-slate-800 mb-3"><i class="fa fa-exclamation-triangle text-amber-500 me-2"/>Department Risk Alerts</h5>
+                        <div t-if="state.alerts.length == 0" class="text-center py-4">
+                            <i class="fa fa-shield-halved fs-2 text-emerald-400 mb-2"/>
+                            <p class="text-muted m-0">No active alerts. All operations stable.</p>
+                        </div>
+                        <t t-else="">
+                            <t t-foreach="state.alerts" t-as="alert" t-key="alert.id">
+                                <EsgAlertCard alert="alert" onUpdate="() => this.loadData()"/>
+                            </t>
+                        </t>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Floating AI chat -->
+            <EsgAiChatPanel role="'manager'"/>
+
+        </div>
+    </t>
+</templates>
